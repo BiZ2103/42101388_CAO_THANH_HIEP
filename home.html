@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hệ Thống Trạm Bơm - Submersible Pump UI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
+    
+    <style>
+     
+        * { box-sizing: border-box; }
+
+        :root {
+            --bg-color: #acaaaa; 
+            --card-bg: #141414; 
+            --text-color: #e0e0e0;
+            --accent-blue: #00b0ff; 
+            --accent-green: #00c853;
+            --accent-red: #d50000;
+            --nav-bg: #1a1a1a;
+            --scada-bg: #acaaaa; 
+            --accent-purple: #8A2BE2;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            padding-top: 60px; 
+            overflow: hidden; 
+            font-weight: 500;
+        }
+        
+      
+        input[type="date"] {
+            position: relative;
+            padding-right: 25px; 
+            cursor: pointer;
+        }
+
+  
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1); /* Đảo màu đen thành trắng */
+            opacity: 1;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+        }
+
+
+        svg path, svg rect, svg line, svg circle {
+            transition: all 0.5s ease-out;
+        }
+        
+        .water-flow {
+            stroke: var(--accent-blue) !important;
+            stroke-dasharray: 20 10; 
+            animation: flowAnimation 1s linear infinite; 
+        }
+        @keyframes flowAnimation { from { stroke-dashoffset: 30; } to { stroke-dashoffset: 0; } }
+        .water-rising { animation: waterLevelWave 4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: bottom; }
+        @keyframes waterLevelWave { 0% { transform: scaleY(0.1); } 100% { transform: scaleY(1.05); } }
+        .pump-running-effect { animation: pumpShake 0.1s infinite; filter: brightness(1.2) drop-shadow(0 0 5px #00e676); }
+        @keyframes pumpShake { 0% { transform: translate(0, 0); } 25% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, 0); } 75% { transform: translate(0, -1px); } 100% { transform: translate(0, 0); } }
+
+        /* HEADER  */
+        .header-title {
+            background: #004d40; 
+            color: white;
+            text-align: center;
+            padding: 10px 0 5px 0; 
+            margin: 0;
+            border-bottom: 1px solid #00695c; 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 102;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header-main-text { font-size: 20px; font-weight: 700; letter-spacing: 1px; margin-bottom: 2px; }
+        #datetimeDisplay.header-datetime { color: #b2dfdb; font-size: 0.85em; font-weight: 600; padding: 0 15px 5px 15px; text-align: center; }
+
+        /* LAYOUT CHÍNH  */
+        .main-content {
+            width: 100%;
+            height: calc(100vh - 120px); 
+            padding-bottom: 60px;
+            /* [FIX] Luôn hiện thanh cuộn dọc để tránh giật màn hình khi nội dung thay đổi */
+            overflow-y: scroll; 
+        }
+        .tab-content { display: none; width: 100%; min-height: 100%; }
+        .tab-content.active { display: block; }
+        
+        /*  SCADA TAB  */
+        #scada-tab {
+            overflow: hidden; 
+            background-color: var(--scada-bg); 
+            background-image: radial-gradient(circle at 50% 50%, #acaaaa 0%, #acaaaa 100%), url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23222222' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); 
+            position: relative; 
+            height: 100%;
+        }
+        
+        .realtime-box {
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            z-index: 10; padding: 5px 15px; border-radius: 10px;
+            background: #212121; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            border: 1px solid #444; width: 220px; text-align: center;
+        }
+        #realtimeClockScada { color: #ffffff; font-family: 'Quicksand', sans-serif; font-size: 0.9em; font-weight: 700; letter-spacing: 1px; display: block; white-space: nowrap; }
+
+        .scada-container {
+            display: flex; justify-content: center; align-items: center;
+            width: 100%; height: 100%; transition: transform 0.3s ease-in-out;
+        }
+
+        .zoom-bar {
+            position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
+            background: #222; padding: 5px 15px; border-radius: 30px;
+            display: flex; align-items: center; gap: 15px; z-index: 200;
+            border: 1px solid #444; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 80%; max-width: 250px;
+        }
+        .zoom-bar i { color: #888; transition: 0.3s; }
+        .zoom-bar i:hover { color: var(--accent-blue); }
+        .zoom-bar input { width: 100%; cursor: pointer; accent-color: var(--accent-blue); }
+        .zoom-bar span { color: var(--accent-blue); font-weight: 700; font-size: 15px; font-family: 'Quicksand', sans-serif; }
+
+        /*  BẢNG ĐIỀU KHIỂN */
+        .sidebar-toggle-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 300;
+            background: rgba(0, 176, 255, 0.9);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        .sidebar-toggle-btn:hover { transform: scale(1.1); background: #00b0ff; }
+
+        .scada-sidebar {
+            position: absolute;
+            left: 0;
+            right: 0;
+            width: 350px; 
+            height: 100%;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 400; 
+            transform: translateX(-100%); 
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-right: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            border-radius: 0 20px 20px 0; /* Bo tròn góc trên và dưới bên phải */
+            overflow: hidden; /* Quan trọng: Để nội dung bên trong không tràn ra khỏi góc bo */
+             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .scada-sidebar.open {
+            transform: translateX(0); 
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sidebar-title { font-weight: 700; color: var(--accent-blue); font-size: 18px; text-transform: uppercase; }
+        .close-sidebar {
+            background: transparent; border: none; color: #777; font-size: 24px; cursor: pointer;
+        }
+        .close-sidebar:hover { color: var(--accent-red); }
+
+        .sidebar-content {
+            direction: rtl; 
+            overflow-y: auto;
+            padding-left: 10px; 
+        }
+
+        .sidebar-content > * {
+            direction: ltr; 
+        }
+
+        .sidebar-content::-webkit-scrollbar { width: 5px; }
+        .sidebar-content::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-content::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
+        .sidebar-content::-webkit-scrollbar-thumb:hover { background: var(--accent-blue); }
+
+        .card-stat {
+            background: #1e1e1e; border: 1px solid #333; border-radius: 12px;
+            padding: 15px; display: flex; align-items: center; gap: 15px;
+            margin-bottom: 10px; transition: all 0.2s ease;
+        }
+        .card-stat:hover { border-color: #555; background: #252526; }
+        .card-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid rgba(255,255,255,0.1); }
+        .card-info { flex: 1; }
+        .stat-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; font-weight: 600; }
+        .stat-value { font-size: 18px; font-weight: 700; color: white; transition: color 0.3s; }
+        
+        .digital-text { font-family: 'Quicksand', sans-serif; font-weight: 700; letter-spacing: 1px; }
+        .text-neon-blue { color: var(--accent-blue); }
+        .text-neon-yellow { color: #fdd835; }
+        .text-neon-red { color: var(--accent-red); }
+
+        .control-group { margin-top: 20px; border-top: 1px dashed #444; padding-top: 20px; }
+        .btn-row { display: flex; gap: 10px; justify-content: space-between; margin-bottom: 15px; }
+        .btn-large { flex: 1; padding: 12px; border-radius: 8px; font-weight: 700; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;}
+        .btn-green { background: #2e7d32; } .btn-green:hover { background: #388e3c; }
+        .btn-red { background: #c62828; } .btn-red:hover { background: #d32f2f; }
+        .btn-grey { background: #455a64; } .btn-grey:hover { background: #546e7a; }
+        .btn-blue { background: #0277bd; width: 100%; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; margin-top: 10px; }
+
+        .freq-control-sb { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
+        .btn-adjust { background: #333; color: white; width: 40px; height: 40px; border: 1px solid #555; border-radius: 8px; cursor: pointer; }
+        .input-freq-sb { background: #000; color: var(--accent-green); border: 1px solid #444; height: 40px; width: 80px; text-align: center; font-size: 20px; font-weight: 700; border-radius: 8px; }
+
+        /* BẢNG QUAN TRẮC  */
+.monitor-panel {
+    position: absolute;
+    top: 50px; 
+    right: 50px; 
+    width: 400px;
+    z-index: 100;
+    display: grid;
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px; 
+    background: rgba(15, 15, 15, 0.9); 
+    backdrop-filter: blur(15px); 
+    border: 1px solid rgba(255, 255, 255, 0.15); 
+    border-radius: 20px; 
+    padding: 15px; 
+}
+
+.monitor-title {
+    grid-column: span 2; 
+    text-align: center;
+    color: var(--accent-blue);
+    font-weight: 700;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+
+.row-full {
+    grid-column: span 2;
+}
+
+.monitor-panel .card-stat {
+    background: rgba(255, 255, 255, 0.03); 
+    border: 1px solid rgba(255, 255, 255, 0.08); 
+    border-radius: 12px; 
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s;
+}
+
+.monitor-panel .card-stat:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-blue);
+}
+
+.monitor-panel .card-icon {
+    width: 38px;
+    height: 38px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.monitor-panel .stat-label {
+    font-size: 10px;
+    margin-bottom: 2px;
+    color: #aaa;
+    font-weight: 600;
+}
+
+.monitor-panel .stat-value {
+    font-size: 17px;
+    font-weight: 700;
+}
+
+/* Responsive cho mobile */
+@media screen and (max-width: 768px) {
+    .monitor-panel { display: none; }
+}  
+
+        /* TYLE LỊCH BIỂU */
+        .container { max-width: 650px; margin: 0 auto; padding: 15px; }
+        .section-title { margin-top: 0; margin-bottom: 25px; padding-left: 15px; border-left: 4px solid; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .btn-add-schedule { background-color: var(--accent-purple); color: white; width: 40px; height: 40px; border-radius: 50%; border: none; font-size: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4); margin-bottom: 0 !important; pointer-events: none; }
+        .schedule-form-container { background: #252526; padding: 15px; border-radius: 15px; border: 1px solid var(--accent-purple); margin-bottom: 20px; display: none; flex-direction: column; gap: 10px; animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .sched-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+        .sched-group { display: flex; flex-direction: column; min-width: 60px; }
+        .sched-label { font-size: 10px; color: #aaa; margin-bottom: 2px; text-transform: uppercase; }
+        .custom-select { background: #333; color: white; border: 1px solid #555; border-radius: 6px; padding: 8px 5px; font-family: 'Quicksand', sans-serif; font-weight: 600; font-size: 14px; outline: none; }
+        .input-freq-sched { width: 70px; background: #000; color: var(--accent-green); border: 1px solid #555; padding: 8px; border-radius: 6px; font-weight: 700; text-align: center; }
+        .btn-save-sched { background: var(--accent-purple); color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: 700; cursor: pointer; height: 36px; margin-top: 15px; margin-left: auto; }
+        .sched-card { background: #141414; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--accent-purple); transition: all 0.3s ease; }
+        .sched-info { flex: 1; }
+        .sched-time { color: var(--accent-purple); font-weight: 700; font-size: 16px; }
+        .sched-meta { font-size: 13px; color: #aaa; margin-top: 4px; }
+        .btn-delete { color: var(--accent-red); cursor: pointer; padding: 10px; font-size: 18px; }
+        .add-sched-row { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; cursor: pointer; width: fit-content; }
+        .add-sched-row:hover .btn-add-schedule { transform: scale(1.1); box-shadow: 0 0 15px var(--accent-purple); }
+        .add-sched-text { color: var(--accent-purple); font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; }
+        .add-sched-row:hover .add-sched-text { color: #b388ff; }
+
+        /*STYLE CHO CHART - */
+        .chart-row-container {
+            display: flex;
+            flex-direction: row; 
+            gap: 15px;
+            width: 100%;
+            height: 350px; 
+            min-height: 350px;
+            padding-bottom: 10px;
+        }
+
+
+       .chart-wrapper {
+            background: #141414; 
+            border-radius: 12px; 
+            border: 1px solid #333; 
+            display: flex;
+            flex-direction: column; 
+            flex: 1;               
+            min-width: 0;          
+            height: 100%;          
+            padding: 10px;
+            position: relative; 
+            overflow: hidden; 
+        }
+
+  
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+            margin-bottom: 0; 
+        }
+
+        @media screen and (max-width: 768px) {
+            .chart-row-container {
+                flex-direction: column;
+                height: auto;
+            }
+            .chart-wrapper {
+                width: 100%;
+                height: 300px; 
+                margin-bottom: 15px;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .scada-sidebar { 
+                width: 100%; 
+                max-width: 320px; 
+                left: 0;    
+                right: auto; 
+         }
+    }
+
+        /* THANH ĐIỀU HƯỚNG */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
+            background-color: #1a1a1a; border-top: 1px solid #333;
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #777; text-decoration: none; font-size: 11px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease; width: 25%; 
+            height: 100%; border-left: none !important; background: transparent !important;
+        }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; transition: transform 0.2s; }
+        .nav-item.active { color: var(--accent-blue); position: relative; }
+        .nav-item.active i { transform: translateY(-2px); text-shadow: 0 0 10px var(--accent-blue); }
+        .nav-item.active::after { content: ''; position: absolute; top: 0; left: 25%; width: 50%; height: 3px; background: var(--accent-blue); border-radius: 0 0 4px 4px; box-shadow: 0 2px 5px var(--accent-blue); }
+        .nav-item:active { transform: scale(0.95); }
+
+        /*BẢNG CHAT STYLE*/
+        .chat-btn-floating {
+            position: fixed; bottom: 80px; right: 20px;
+            width: 50px; height: 50px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 176, 255, 0.4);
+            cursor: pointer; z-index: 2000;
+            transition: transform 0.2s;
+        }
+        .chat-btn-floating:hover { transform: scale(1.1); }
+        .chat-btn-floating i { color: white; font-size: 24px; }
+
+        .chat-window {
+            display: none; 
+            position: fixed; bottom: 140px; right: 20px;
+            width: 320px; height: 450px;
+            background: #141414;
+            border: 1px solid #333;
+            border-radius: 12px;
+            z-index: 2000;
+            flex-direction: column;
+            box-shadow: -5px 10px 30px rgba(0,0,0,0.7);
+            overflow: hidden;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .chat-header {
+            background: #004d40;
+            padding: 12px 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #00695c;
+        }
+        .chat-title { font-weight: 700; font-size: 14px; color: white; display: flex; align-items: center; gap: 8px; }
+        .chat-close { cursor: pointer; color: #b2dfdb; transition: 0.2s; }
+        .chat-close:hover { color: white; }
+
+        .chat-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 13px;
+            background: #1e1e1e;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .chat-body::-webkit-scrollbar { width: 6px; }
+
+        .msg-bubble {
+            padding: 8px 12px;
+            border-radius: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+        .msg-user {
+            align-self: flex-end;
+            background: var(--accent-blue);
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+        .msg-bot {
+            align-self: flex-start;
+            background: #333;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            border-bottom-left-radius: 2px;
+        }
+
+        .chat-input-area {
+            padding: 10px;
+            background: #141414;
+            border-top: 1px solid #333;
+            display: flex; gap: 8px;
+        }
+        .chat-input {
+            flex: 1;
+            background: #000;
+            border: 1px solid #444;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            outline: none;
+            font-family: 'Quicksand', sans-serif;
+        }
+        .chat-send-btn {
+            background: var(--accent-blue);
+            border: none;
+            width: 35px; height: 35px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .suggestion-chips {
+            display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px;
+        }
+        .chip {
+            background: rgba(0, 176, 255, 0.15);
+            border: 1px solid var(--accent-blue);
+            color: var(--accent-blue);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .chip:hover { background: var(--accent-blue); color: white; }
+
+        /*STYLE CHO KHUNG KÉO THẢ */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .drag-scroll { 
+            cursor: grab; 
+            overflow-x: auto; 
+            overflow-y: hidden; 
+            user-select: none; 
+        }
+        .drag-scroll:active { 
+            cursor: grabbing; 
+        }
+    </style>
+</head>
+<body>
+    <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; z-index: 9999; display: flex; justify-content: center; align-items: center; font-family: 'Quicksand', sans-serif;">
+    <div style="background: #1e1e1e; padding: 30px; border-radius: 15px; border: 1px solid #333; width: 300px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;">
+        <i class="fas fa-user-shield" style="font-size: 40px; color: var(--accent-blue); margin-bottom: 15px;"></i>
+        <h2 style="color: white; margin-bottom: 20px; font-size: 18px;">ĐĂNG NHẬP</h2>
+        <p style="color: #aaa; font-size: 15px; margin-top: -15px; margin-bottom: 20px;">admin/12345</p>
+        <input type="text" id="username" placeholder="Tài khoản" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #444; background: #000; color: white; box-sizing: border-box; outline: none;">
+        
+<div style="position: relative; margin-bottom: 20px;">
+    <input type="password" id="password" placeholder="Mật khẩu" 
+        style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #000; color: white; box-sizing: border-box; outline: none; padding-right: 40px;">
+    
+    <i class="fas fa-eye" id="togglePassword" 
+        style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #777; cursor: pointer;"></i>
+</div>
+        
+        <button onclick="checkLogin()" style="width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--accent-blue); color: white; font-weight: bold; cursor: pointer; transition: 0.3s;">
+            ĐĂNG NHẬP
+        </button>
+        <p id="loginError" style="color: #ff5252; font-size: 12px; margin-top: 15px; display: none;">Sai tài khoản hoặc mật khẩu!</p>
+    </div>
+</div>
+<a href="/monitor.html" style="
+    position: fixed; 
+    top: 20px; 
+    left: -5px; 
+    z-index: 9999; 
+    color: white; 
+    padding: 10px 20px; 
+    text-decoration: none; 
+    border-radius: 8px; 
+    font-family: sans-serif; 
+    font-weight: bold;">
+    Quay Lại
+</a>
+    <header class="header-title">
+        <div class="header-main-text">HỆ THỐNG TRẠM BƠM</div>
+        <div id="datetimeDisplay" class="header-datetime"></div>
+    </header>
+
+    <div class="main-content">
+        
+        <div id="scada-tab" class="tab-content active">
+            <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
+                <i class="fas fa-sliders-h"></i>
+            </button>
+
+            <div id="scadaSidebar" class="scada-sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-title">Bảng Điều Khiển</div>
+                    <button class="close-sidebar" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+                </div>
+                
+                <div class="sidebar-content">
+                    <div class="control-group" style="margin-top: 0; border-top: none;">
+                        <div class="stat-label" style="color: var(--accent-green); margin-bottom: 15px; text-align: center;">ĐIỀU KHIỂN HỆ THỐNG</div>
+
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <div class="stat-label" style="margin-bottom: 5px;">ĐẶT TẦN SỐ (Hz)</div>
+                            <div class="freq-control-sb">
+                                <button class="btn-adjust" onclick="adjustFreq(-1)"> <i class="fas fa-minus"></i> </button>
+                                <input type="number" id="inputFreq" class="input-freq-sb" value="0" min="0" max="50">
+                                <button class="btn-adjust" onclick="adjustFreq(1)"> <i class="fas fa-plus"></i> </button>
+                            </div>
+                            <button class="btn-blue" onclick="sendFreq()">GỬI TẦN SỐ</button>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn-large btn-green" onclick="sendCommand('CMD_RUN')"><i class="fas fa-power-off"></i> CHẠY</button>
+                            <button class="btn-large btn-red" onclick="sendCommand('CMD_STOP')"><i class="fas fa-stop-circle"></i> DỪNG</button>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn-large btn-grey" onclick="sendCommand('MODE_MANUAL')"><i class="fas fa-hand-pointer"></i> THỦ CÔNG</button>
+                            <button class="btn-large btn-grey" onclick="sendCommand('MODE_AUTO')"><i class="fas fa-robot"></i> TỰ ĐỘNG</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+           <div class="monitor-panel">
+    <div class="monitor-title">QUAN TRẮC DỮ LIỆU</div>
+
+    <div class="card-stat row-full" style="background: rgba(0, 176, 255, 0.1) !important; border: 1px solid var(--accent-blue) !important;">
+        <div class="card-icon" style="color: #fff; background: var(--accent-blue);"> <i class="fas fa-wifi"></i> </div>
+        <div class="card-info">
+            <div class="stat-label" style="color: #fff;">HỆ THỐNG</div>
+            <div class="stat-value" id="sysConnectionStatus" style="font-size: 20px; letter-spacing: 2px;">...</div>
+        </div>
+    </div>
+
+    <div class="card-stat">
+        <div class="card-icon" style="color: #00e5ff;"> <i class="fas fa-water"></i> </div>
+        <div class="card-info">
+            <div class="stat-label">LƯU LƯỢNG</div>
+            <div class="stat-value digital-text text-neon-blue"><span id="flowVal">0.0</span> <small>m³/h</small></div>
+        </div>
+    </div>
+    <div class="card-stat" style="border-color: #00c853 !important;">
+        <div class="card-icon" style="color: #00c853;"> <i class="fas fa-chart-pie"></i> </div>
+        <div class="card-info">
+            <div class="stat-label">TỔNG LƯU LƯỢNG HÔM NAY</div>
+            <div class="stat-value digital-text" style="color: #00c853;"><span id="totalM3Val">0.000</span> <small>m³</small></div>
+        </div>
+    </div>
+
+    <div class="card-stat">
+        <div class="card-icon" style="color: var(--accent-blue);"> <i class="fas fa-tachometer-alt"></i> </div>
+        <div class="card-info">
+            <div class="stat-label">ÁP SUẤT</div>
+            <div class="stat-value digital-text text-neon-blue"><span id="pressureVal">0.0</span> <small>Bar</small></div>
+        </div>
+    </div>
+    <div class="card-stat">
+        <div class="card-icon" style="color: var(--accent-red);"> <i class="fas fa-bolt"></i> </div>
+        <div class="card-info">
+            <div class="stat-label">ĐIỆN ÁP</div>
+            <div class="stat-value digital-text text-neon-red"><span id="voltageVal">0</span> <small>V</small></div>
+        </div>
+    </div>
+
+    <div class="card-stat">
+        <div class="card-icon" style="color: #fdd835;"> <i class="fas fa-wave-square"></i> </div>
+        <div class="card-info">
+            <div class="stat-label">TẦN SỐ THỰC</div>
+            <div class="stat-value digital-text text-neon-yellow"><span id="realFreq">0</span> <small>Hz</small></div>
+        </div>
+    </div>
+    <div class="card-stat">
+        <div class="card-icon" style="color: #fff;"> <i class="fas fa-sliders-h"></i> </div>
+        <div class="card-info">
+            <div class="stat-label">TẦN SỐ ĐẶT</div>
+            <div class="stat-value digital-text"><span id="setFreq">0</span> <small>Hz</small></div>
+        </div>
+    </div>
+
+    <div class="card-stat">
+        <div class="card-info">
+            <div class="stat-label">CHẾ ĐỘ</div>
+            <div class="stat-value" id="modeStatus" style="color: #fff; font-size: 14px;">---</div>
+        </div>
+    </div>
+    <div class="card-stat">
+        <div class="card-info">
+            <div class="stat-label">TRẠNG THÁI</div>
+            <div class="stat-value" id="runStatus" style="font-size: 14px;">DỪNG</div>
+        </div>
+    </div>
+</div>
+
+            <div class="zoom-bar" id="zoomBar">
+                <i class="fas fa-search-minus"></i>
+                <input type="range" id="zoomSlider" min="0.5" max="2.0" step="0.1" value="1.0">
+                <i class="fas fa-search-plus"></i>
+                <span id="zoomVal">100%</span>
+            </div>
+
+            <div class="scada-container" id="scadaScaleContainer">
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 -50 1200 700"  preserveAspectRatio="xMidYMid meet"
+                style="width: 100%; height: 100%; display: block;">
+                    <defs>
+                        <linearGradient id="tankWallGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#444;stop-opacity:0.1" />
+                            <stop offset="20%" style="stop-color:#777;stop-opacity:0.1" />
+                            <stop offset="50%" style="stop-color:#999;stop-opacity:0.1" />
+                            <stop offset="80%" style="stop-color:#777;stop-opacity:0.1" />
+                            <stop offset="100%" style="stop-color:#444;stop-opacity:0.1" />
+                        </linearGradient>
+                        <linearGradient id="waterGradNew" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#6de7eb;stop-opacity:1" /> 
+                            <stop offset="50%" style="stop-color:#12b3c2;stop-opacity:1" /> 
+                            <stop offset="100%" style="stop-color:#03989d;stop-opacity:1" /> 
+                        </linearGradient>
+                        <radialGradient id="waterSurfaceGrad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                            <stop offset="0%" style="stop-color:#e0f7fa;stop-opacity:0.8" />
+                            <stop offset="100%" style="stop-color:#00bcd4;stop-opacity:0.9" />
+                        </radialGradient>
+                        <linearGradient id="inverterCaseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#444;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#222;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="inverterScreenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#cfd8dc;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#b0bec5;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="pumpGradStop" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#b71c1c;stop-opacity:1" />
+                            <stop offset="40%" style="stop-color:#e53935;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#510000;stop-opacity:1" />
+                        </linearGradient>
+                         <linearGradient id="pumpGradRun" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#1b5e20;stop-opacity:1" />
+                            <stop offset="40%" style="stop-color:#43a047;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#1b5e20;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="pipeGradStatic" x1="0%" y1="0%" x2="100%" y2="0%">
+                             <stop offset="0%" style="stop-color:#eeeeee;stop-opacity:1" />
+                             <stop offset="50%" style="stop-color:#ffffff;stop-opacity:1" />
+                             <stop offset="100%" style="stop-color:#eeeeee;stop-opacity:1" />
+                        </linearGradient>
+                        <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                            <feOffset dx="3" dy="3" result="offsetblur"/>
+                            <feComponentTransfer><feFuncA type="linear" slope="0.3"/></feComponentTransfer>
+                            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                    </defs>
+
+                    <g transform="translate(350, 50)">
+                        <g transform="translate(0, 0)"> 
+                            <path d="M 50 180 L 50 550 C 50 590 450 590 450 550 L 450 180 A 200 30 0 0 0 50 180 Z"
+                                  fill="url(#tankWallGrad)" stroke="#333" stroke-width="2" filter="url(#dropShadow)"/>
+
+                            <g id="tank-water">
+                                <path d="M 55 220 L 55 545 C 55 575 445 575 445 545 L 445 220 Z"
+                                      fill="url(#waterGradNew)" stroke="none" opacity="0.9"/>
+                                <ellipse cx="250" cy="220" rx="195" ry="28" fill="url(#waterSurfaceGrad)" stroke="none" opacity="0.8"/>
+                            </g>
+
+                            <path d="M 50 180 A 200 30 0 0 1 450 180"
+                                  fill="none" stroke="#555" stroke-width="4" stroke-linecap="round"/>
+                            
+                            <path id="power-cable" 
+                             d="M 0 80 L -20 80 L -20 520 L 250 520" 
+                            fill="none" stroke="#000000" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" filter="url(#dropShadow)"/>
+
+                            <g transform="translate(196, 500)" filter="url(#dropShadow)">
+                                <g id="pump-inner-group"> 
+                                    <path d="M -15 20 C -35 20, -35 -30, -35 -60" fill="none" stroke="#333" stroke-width="8" stroke-linecap="round"/>
+                                    <rect x="-25" y="30" width="50" height="12" rx="2" fill="#78909c" stroke="#37474f" stroke-width="2"/>
+                                    <rect id="complex-pump-body" x="-20" y="-50" width="40" height="80" rx="5" 
+                                          fill="url(#pumpGradStop)" stroke="#b71c1c" stroke-width="2"/>
+                                    <line class="pump-rib" x1="-10" y1="-48" x2="-10" y2="28" stroke="#b71c1c" stroke-width="2"/>
+                                    <line class="pump-rib" x1="0" y1="-48" x2="0" y2="28" stroke="#b71c1c" stroke-width="2"/>
+                                    <line class="pump-rib" x1="10" y1="-48" x2="10" y2="28" stroke="#b71c1c" stroke-width="2"/>
+
+                                    <rect x="-22" y="-60" width="44" height="15" rx="3" fill="#78909c" stroke="#37474f" stroke-width="2"/>
+                                    <path d="M -15 -60 L -15 -70 Q -15 -85, 0 -85 Q 15 -85, 15 -70 L 15 -60" fill="none" stroke="#78909c" stroke-width="6" stroke-linecap="round"/>
+                                    <rect x="-10" y="-88" width="20" height="6" rx="2" fill="#546e7a"/>
+                                </g> 
+                                <text x="0" y="-100" text-anchor="middle" font-size="14" font-weight="700" fill="#000000" font-family="'Quicksand', sans-serif">BƠM</text>
+                            </g>
+
+                            <path d="M 250 520 L 250 90 L 90 90 L 90 -10 L 400 -10 L 400 90 L 300 90 L 300 150 " 
+                                fill="none" stroke="#000000" stroke-width="16" stroke-linejoin="round" stroke-linecap="round" filter="url(#dropShadow)"/>
+
+                            <path id="svg-pipe" d="M 250 520 L 250 90 L 90 90 L 90 -10 L 400 -10 L 400 90 L 300 90 L 300 150" 
+                                fill="none" stroke="url(#pipeGradStatic)" stroke-width="14" stroke-linejoin="round" stroke-linecap="round" filter="url(#dropShadow)"/>
+                            
+                            <g transform="translate(210, -40) scale(2)"> 
+                                <text x="80" y="-10" text-anchor="middle" font-size="8" font-weight="700" fill="#000000" font-family="'Quicksand', sans-serif">CẢM BIẾN ÁP SUẤT</text>
+                                <line x1="0" y1="0" x2="0" y2="15" stroke="#555" stroke-width="1"/>
+                                <rect id="sensor-cp-box" x="-15" y="-30" width="30" height="30" fill="#ddd" stroke="#555" stroke-width="2"/>
+                                <text x="0" y="-10" text-anchor="middle" font-size="12" font-weight="bold" fill="#333" font-family="'Quicksand', sans-serif">P</text>
+                            </g>
+
+                            <g transform="translate(340, 90) scale(2.5)" filter="url(#dropShadow)">  
+                                <text x="0" y="-15" text-anchor="middle" font-size="7" font-weight="700" fill="#000000" font-family="'Quicksand', sans-serif">VAN</text>
+                                <path d="M -10 -10 L 10 10 L 10 -10 L -10 10 Z" fill="#777" stroke="#333"/>
+                                <circle cx="0" cy="0" r="4" fill="#ccc" stroke="#333"/>
+                            </g>
+
+                            <g id="inverter-box" transform="translate(-80, -20)" filter="url(#dropShadow)">
+                                <text x="50" y="-15" fill="#000000" font-family="'Quicksand', sans-serif" font-weight="700" font-size="16" text-anchor="middle">BIẾN TẦN</text>
+                                <rect id="inverter-case-body" x="0" y="0" width="100" height="120" rx="10" fill="url(#inverterCaseGrad)" stroke="#111" stroke-width="2"/>
+                                <rect x="10" y="15" width="80" height="50" rx="5" fill="url(#inverterScreenGrad)" stroke="#333" stroke-width="1"/>
+                                <rect x="15" y="75" width="30" height="30" rx="5" fill="#333" stroke="#111" stroke-width="1"/>
+                                <rect x="55" y="75" width="30" height="30" rx="5" fill="#333" stroke="#111" stroke-width="1"/>
+                            </g>
+                        </g>
+                        </g>
+                </svg>
+            </div>
+        </div>
+        
+       <div id="chart-tab" class="tab-content">
+            <div class="container" style="height: 100%; display: flex; flex-direction: column; max-width: 100%;">
+                <h3 class="section-title" style="border-color: #ffffff; color: #ffffff; margin-bottom: 15px;">BIỂU ĐỒ GIÁM SÁT</h3>
+                
+                <div style="background: #222; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; justify-content: center; border: 1px solid #444;">
+                    <label style="color: #aaa; font-size: 13px;">Xem lại ngày:</label>
+                    <input type="date" id="historyDateInput" style="background: #000; color: white; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; font-family: 'Quicksand';">
+                    <button onclick="fetchHistoryData()" style="background: var(--accent-blue); border: none; color: white; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                        <i class="fas fa-search"></i> Xem
+                    </button>
+                    <button onclick="resetCharts()" style="background: #444; border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer;" title="Quay về Realtime">
+                        <i class="fas fa-sync"></i>
+                    </button>
+                </div>
+                <div class="chart-row-container">
+                   <div class="chart-wrapper">
+    <div class="chart-header" style="color: #00b0ff;">ÁP SUẤT (BAR)</div>
+    <div style="flex: 1; position: relative; width: 100%; overflow: hidden;">
+        <canvas id="pressureChart"></canvas>
+    </div>
+</div>
+
+<div class="chart-wrapper">
+    <div class="chart-header" style="color: #00e676;">TẦN SỐ (HZ)</div>
+    <div style="flex: 1; position: relative; width: 100%; overflow: hidden;">
+        <canvas id="freqChart"></canvas>
+    </div>
+</div>
+                </div>
+
+                <div class="chart-wrapper" style="width: 100%; height: 350px; min-height: 350px; margin-top: 15px; border: 1px solid #00e5ff; display: flex; flex-direction: column; overflow: hidden;">
+                    
+                    <div class="chart-header" style="color: #00e5ff; padding: 10px 10px 0 10px; flex-shrink: 0;">
+                        LƯU LƯỢNG NƯỚC THEO GIỜ (m³)
+                    </div>
+                    
+                    <div id="scrollContainer" class="drag-scroll hide-scrollbar" style="flex: 1; padding: 10px; width: 100%;">
+                        <div style="width: 100%; height: 100%; min-width: 1200px;">
+                            <canvas id="hourlyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align:center; color:#666; font-size:11px; margin-top:5px;"></div>
+            </div>
+        </div>
+
+        <div id="schedule-tab" class="tab-content">
+            <div class="container">
+                <h3 class="section-title" style="border-color: var(--accent-purple); color: var(--accent-purple);">HẸN GIỜ VẬN HÀNH</h3>
+                
+                <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+    <div class="add-sched-row" onclick="toggleScheduleForm()" style="margin-bottom: 0;">
+        <button class="btn-add-schedule"><i class="fas fa-plus"></i></button>
+        <span class="add-sched-text">Thêm lịch</span>
+    </div>
+    
+    <div id="btnLockAll" onclick="toggleLockAll()" style="cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold; text-transform: uppercase; font-size: 14px;">
+        <i id="iconLockAll" class="fas fa-unlock"></i>
+        <span id="textLockAll">ĐANG MỞ</span>
+    </div>
+
+    <div style="margin-left: auto;"> <select id="sortSchedule" onchange="loadSchedules()" style="background: #333; color: white; border: 1px solid #555; padding: 5px 10px; border-radius: 6px; font-family: 'Quicksand'; outline: none; cursor: pointer;">
+            <option value="ASC">⏳ Gần Nhất</option>
+            <option value="DESC">⌛ Xa Nhất</option>
+        </select>
+    </div>
+</div>
+  
+                <div id="schedForm" class="schedule-form-container">
+                   <div class="sched-row" style="margin-bottom: 15px; align-items: flex-end;">
+    <div class="sched-group" style="flex: 1;">
+        <span class="sched-label" style="color: var(--accent-blue); font-weight: bold;">Tần số (Hz)</span>
+        <input type="text" id="selFreq" class="input-freq-sched" style="width: 100%; box-sizing: border-box;" value="00">
+    </div>
+    <div class="sched-group" style="flex: 1; margin-left: 10px;">
+        <span class="sched-label" style="color: #00e676; font-weight: bold;">Lưu lượng ước tính (m³)</span>
+        <input type="number" id="selLimitM3" class="input-freq-sched" style="width: 100%; box-sizing: border-box; color: #00e676; border-color: #00e676;" placeholder="--" step="0.1">
+</div>
+    
+    <div class="sched-group" style="width: 100px; margin-left: 10px;">
+        <span class="sched-label">Lặp lại</span>
+        <select id="selRepeat" class="custom-select" style="width: 100%;">
+            <option value="0">Một lần</option>
+            <option value="1">Hàng ngày</option>
+        </select>
+    </div>
+    <div class="sched-group" style="width: 130px; margin-left: 10px;">
+        <span class="sched-label">sau kết thúc</span>
+        <select id="selFinalMode" class="custom-select" style="width: 100%;">
+            <option value="MODE_AUTO">VỀ TỰ ĐỘNG</option>
+            <option value="STOP">DỪNG HẲN</option>
+        </select>
+    </div>
+</div>
+
+                    <hr style="border: 0; border-top: 1px solid #444; width: 100%; margin: 10px 0;">
+
+                    <div class="sched-row">
+                        <div class="sched-group" style="min-width: 100%; margin-bottom: 5px;">
+                            <span class="sched-label" style="color: var(--accent-green); font-weight: bold;">● BẮT ĐẦU</span>
+                        </div>
+                        <div class="sched-group"><span class="sched-label">Ngày</span><select id="selDate" class="custom-select"></select></div>
+                        <div class="sched-group"><span class="sched-label">Tháng</span><select id="selMonth" class="custom-select"></select></div>
+                        <div class="sched-group"><span class="sched-label">Năm</span><select id="selYear" class="custom-select"></select></div>
+                        <div class="sched-group" style="margin-left: 10px;"><span class="sched-label">Giờ</span><select id="selHour" class="custom-select"></select></div>
+                        <div class="sched-group"><span class="sched-label">Phút</span><select id="selMin" class="custom-select"></select></div>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px dashed #444; width: 100%; margin: 10px 0;">
+
+                    <div class="sched-row">
+                        <div class="sched-group" style="min-width: 100%; margin-bottom: 5px;">
+                            <span class="sched-label" style="color: var(--accent-red); font-weight: bold;">● KẾT THÚC</span>
+                        </div>
+                        <div class="sched-group"><span class="sched-label">Ngày</span><select id="selDateEnd" class="custom-select"></select></div>
+                        <div class="sched-group"><span class="sched-label">Tháng</span><select id="selMonthEnd" class="custom-select"></select></div>
+                        <div class="sched-group"><span class="sched-label">Năm</span><select id="selYearEnd" class="custom-select"></select></div>
+                        <div class="sched-group" style="margin-left: 10px;"><span class="sched-label">Giờ</span><select id="selHourEnd" class="custom-select"></select></div>
+                        <div class="sched-group"><span class="sched-label">Phút</span><select id="selMinEnd" class="custom-select"></select></div>
+                    </div>
+
+                    <div class="sched-row" style="margin-top: 15px; justify-content: flex-end;">
+                        <button class="btn-save-sched" onclick="addScheduleNew()" style="width: 120px; height: 40px; margin-left: 0;">LƯU LỊCH</button>
+                    </div>
+                </div>
+
+                <div id="scheduleList"></div>
+            </div>
+        </div>
+
+    </div>
+    
+   <div class="chat-btn-floating" onclick="toggleChatWindow()">
+    <i class="fas fa-robot"></i>
+    <span id="chatBadge" style="display: none; position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; font-weight: bold; border: 2px solid #fff;">0</span>
+</div>
+
+    <div id="chatWindow" class="chat-window">
+        <div class="chat-header">
+            <div class="chat-title"><i class="fas fa-robot"></i> Trợ Lý Ảo HipBot </div>
+            <i class="fas fa-times chat-close" onclick="toggleChatWindow()"></i>
+        </div>
+
+        <div id="chatBody" class="chat-body">
+            <div class="msg-bubble msg-bot">
+                Chào sếp! em có thể giúp sếp xem thông tin trạm bơm 😃
+            </div>
+            <div id="chatSuggestions" class="suggestion-chips">
+     <div class="chip" onclick="sendChatMsg('Thông tinh sinh viên')">Thông tin Sinh viên</div>
+    <div class="chip" onclick="sendChatMsg('Kiểm tra')">Kiểm tra tất cả</div>
+    <div class="chip" onclick="sendChatMsg('Áp suất')">Áp suất</div>
+    <div class="chip" onclick="sendChatMsg('Lưu lượng')">Lưu lượng</div>
+    <div class="chip" onclick="sendChatMsg('Tần số')">Tần số</div>
+    <div class="chip" onclick="sendChatMsg('Lịch trình')">Lịch trình</div>
+    <div class="chip" onclick="sendChatMsg('Điện áp')">Điện áp</div>
+    <div class="chip" onclick="sendChatMsg('Trạng thái')">Trạng thái</div>
+    <div class="chip" onclick="sendChatMsg('Ngày tháng năm')">ngày tháng năm</div>
+    <div class="chip" onclick="sendChatMsg('Báo cáo hôm qua')">Báo cáo hôm qua</div>
+</div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Nhập lệnh..." onkeypress="handleChatEnter(event)">
+            <button class="chat-send-btn" onclick="sendChatMsg()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('scada-tab', this)">
+            <i class="fas fa-project-diagram"></i>
+            <span>Điều khiển</span>
+        </div>
+        
+        <div class="nav-item" onclick="switchTab('chart-tab', this)">
+            <i class="fas fa-chart-line"></i>
+            <span>Biểu đồ</span>
+        </div>
+
+        <div class="nav-item" onclick="switchTab('schedule-tab', this)">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Lịch biểu</span>
+        </div>
+        
+        <a href="https://docs.google.com/spreadsheets/d/1hdwwFYwSkr0BuUO2gNGOLIAI7gUa9l_yFlsHXWwqag8/edit?usp=sharing" target="_blank" class="nav-item">
+            <i class="fas fa-file-excel"></i>
+            <span>Báo cáo</span>
+        </a>
+    </nav>
+
+    <script>
+ 
+        let displayPressure = 0;
+        let displayFlow = 0;
+        let displayTotalM3 = 0;
+        let displayRealFreq = 0;
+        let displayVoltage = 0;
+        
+        // Hệ số làm mượt 
+        const SMOOTH_FACTOR = 1.0; 
+
+    
+        function smoothData(currentDisplay, newValue) {
+            if (isNaN(newValue)) return currentDisplay;
+            return (currentDisplay * (1 - SMOOTH_FACTOR)) + (newValue * SMOOTH_FACTOR);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('scadaSidebar');
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            } else {
+                sidebar.classList.add('open');
+            }
+        }
+
+        // SCADA ZOOM
+        const scadaContainer = document.getElementById('scadaScaleContainer');
+        const zoomSlider = document.getElementById('zoomSlider');
+        const zoomValText = document.getElementById('zoomVal');
+        const zoomBar = document.getElementById('zoomBar');
+        scadaContainer.style.transform = "scale(0.9)";
+        if(zoomSlider) {
+            zoomSlider.addEventListener('input', (e) => {
+                const scale = e.target.value;
+                scadaContainer.style.transform = `scale(${scale})`;
+                zoomValText.textContent = Math.round(scale * 100) + '%';
+            });
+        }
+
+        // 
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            if(element.classList.contains('nav-item')) {
+                element.classList.add('active');
+            }
+            else{
+                element.closest('.nav-item').classList.add('active');
+            }
+            
+            if(zoomBar){
+                zoomBar.style.display = (tabId === 'scada-tab') ? 'flex' : 'none';
+            }
+            
+            if(tabId === 'schedule-tab') {
+                loadSchedules();
+            }
+        }
+        // Mặc định hiện zoomBar ở tab SCADA
+        if(zoomBar) zoomBar.style.display = 'flex';
+
+        // --- ĐỒNG HỒ ---
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('datetimeDisplay').innerHTML = now.toLocaleString('vi-VN');
+            const scadaClock = document.getElementById('realtimeClockScada');
+            if(scadaClock) scadaClock.textContent = now.toLocaleString('vi-VN');
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        // ĐIỀU KHIỂN TẦN SỐ 
+        function adjustFreq(delta) {
+            const input = document.getElementById('inputFreq');
+            let val = parseFloat(input.value) + delta;
+            if(val < 0) val = 0; if(val > 50) val = 50;
+            input.value = val;
+        }
+
+        function sendCommand(cmd, val = null) {
+            let body = { command: cmd };
+            if(val !== null) body.value = parseFloat(val); 
+            fetch('/api/control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+        }
+
+        function sendFreq() {
+    const freqInput = document.getElementById('inputFreq').value;
+    const freqVal = parseFloat(freqInput);
+
+    // Kiểm tra lớn hơn tần số 40
+    if (freqVal > 40) {
+        const confirmAction = confirm(`⚠️ CẢNH BÁO: Đặt tần số cao (${freqVal}Hz) có thể gây hư hỏng động cơ. Bạn có chắc chắn muốn cài đặt không?`);
+        
+        if (!confirmAction) {
+            console.log("Lệnh đã bị hủy bởi người dùng.");
+            return; 
+        }
+    }
+
+    sendCommand('SET_FREQ', freqInput);
+}
+
+        // LOGIC LỊCH BIỂU 
+        function populateSelect(id, start, end) {
+            const select = document.getElementById(id);
+            select.innerHTML = '';
+            for (let i = start; i <= end; i++) {
+                let val = i < 10 ? '0' + i : i;
+                let option = document.createElement('option');
+                option.value = val;
+                option.text = val;
+                select.appendChild(option);
+            }
+        }
+
+       function initScheduleForm() {
+            populateSelect('selDate', 1, 31);
+            populateSelect('selMonth', 1, 12);
+            populateSelect('selHour', 0, 23);
+            populateSelect('selMin', 0, 59);
+            
+            populateSelect('selDateEnd', 1, 31);
+            populateSelect('selMonthEnd', 1, 12);
+            populateSelect('selHourEnd', 0, 23);
+            populateSelect('selMinEnd', 0, 59);
+            
+            const currentYear = new Date().getFullYear();
+            const yearOptions = `<option value="${currentYear}">${currentYear}</option><option value="${currentYear+1}">${currentYear+1}</option>`;
+            document.getElementById('selYear').innerHTML = yearOptions;
+            document.getElementById('selYearEnd').innerHTML = yearOptions;
+            
+            const now = new Date();
+            document.getElementById('selDate').value = String(now.getDate()).padStart(2,'0');
+            document.getElementById('selMonth').value = String(now.getMonth()+1).padStart(2,'0');
+            document.getElementById('selHour').value = String(now.getHours()).padStart(2,'0');
+            document.getElementById('selMin').value = String(now.getMinutes()).padStart(2,'0');
+            
+            const then = new Date(now.getTime() + 60 * 1000);
+            document.getElementById('selDateEnd').value = String(then.getDate()).padStart(2,'0');
+            document.getElementById('selMonthEnd').value = String(then.getMonth()+1).padStart(2,'0');
+            document.getElementById('selHourEnd').value = String(then.getHours()).padStart(2,'0');
+            document.getElementById('selMinEnd').value = String(then.getMinutes()).padStart(2,'0');
+
+            document.getElementById('selFreq').value = "00";
+            document.getElementById('selLimitM3').value = "00";
+            document.getElementById('selFinalMode').value = "MODE_AUTO";
+        }
+
+        function toggleScheduleForm() {
+            const form = document.getElementById('schedForm');
+            if(form.style.display === 'flex') {
+                form.style.display = 'none';
+            } else {
+                form.style.display = 'flex';
+                initScheduleForm(); 
+            }
+        }
+
+      // nhiệm vụ gửi lệnh lưu xuống Server 
+function executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg) {
+    fetch('/api/schedules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.status === "success") {
+       
+            alert(`✅ Lên lịch thành công!${repeatMsg}\n\n▶️ Bắt đầu: ${displayStart}\n⏹️ Kết thúc: ${displayEnd}${limitMsg}`);
+            
+          
+            document.getElementById('schedForm').style.display = 'none';
+            loadSchedules();
+        } else {
+            alert("❌ Lỗi server: " + result.message);
+        }
+    })
+    .catch(err => {
+        alert("❌ Lỗi kết nối!");
+        console.error(err);
+    });
+}
+
+
+//  GỬI DỮ LIỆU LÊN SERVER 
+function executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg) {
+    fetch('/api/schedules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.status === "success") {
+            alert(`✅ Lên lịch thành công!${repeatMsg}\n\n▶️ Bắt đầu: ${displayStart}\n⏹️ Kết thúc: ${displayEnd}${limitMsg}`);
+            document.getElementById('schedForm').style.display = 'none';
+            loadSchedules();
+        } else {
+            alert("❌ Lỗi server: " + result.message);
+        }
+    })
+    .catch(err => {
+        alert("❌ Lỗi kết nối!");
+        console.error(err);
+    });
+}
+
+
+//  Hàm thêm lịch mới 
+function addScheduleNew() {
+    // Lấy dữ liệu từ Form
+    const startY = document.getElementById('selYear').value;
+    const startM = document.getElementById('selMonth').value;
+    const startD = document.getElementById('selDate').value;
+    const startH = document.getElementById('selHour').value;
+    const startMin = document.getElementById('selMin').value;
+    const startTime = `${startY}-${startM}-${startD}T${startH}:${startMin}`;
+
+    const endY = document.getElementById('selYearEnd').value;
+    const endM = document.getElementById('selMonthEnd').value;
+    const endD = document.getElementById('selDateEnd').value;
+    const endH = document.getElementById('selHourEnd').value;
+    const endMin = document.getElementById('selMinEnd').value;
+    const endTime = `${endY}-${endM}-${endD}T${endH}:${endMin}`;
+
+    const freqVal = parseFloat(document.getElementById('selFreq').value);
+    const finalMode = document.getElementById('selFinalMode').value;
+    const repeatVal = parseInt(document.getElementById('selRepeat').value);
+    const limitM3Val = parseFloat(document.getElementById('selLimitM3').value) || 0;
+
+    //  dữ liệu thời gian thực
+    const startObj = new Date(startTime);
+    const endObj = new Date(endTime);
+    const now = new Date(); 
+
+
+    
+    // Hàm tránh đặt ngược thời gian
+    if (endObj.getTime() < now.getTime() - 60000) {
+        alert("❌ Lỗi: Thời gian kết thúc đã ở trong quá khứ!\nVui lòng đặt lịch cho hiện tại hoặc tương lai.");
+        return;
+    }
+
+
+    if (repeatVal === 0 && startObj.getTime() < now.getTime() - 24 * 60 * 60 * 1000) {
+         alert("❌ Lỗi: Ngày bắt đầu đã trôi qua từ hôm qua rồi sếp ơi!");
+         return;
+    }
+    // --------------------------------
+
+    if (endObj <= startObj) {
+        alert("❌ Lỗi: Thời gian kết thúc phải sau thời gian bắt đầu!");
+        return;
+    }
+    if (isNaN(freqVal) || freqVal < 0 || freqVal > 50) {
+        alert("❌ Tần số phải nằm trong khoảng 0-50Hz!");
+        return;
+    }
+
+    // Chuẩn bị gói dữ liệu lịch biẻu
+    const data = {
+        startTime: startTime,
+        endTime: endTime,
+        freq: freqVal,
+        action: "RUN",
+        finalMode: finalMode,
+        repeat: repeatVal,
+        limitM3: limitM3Val
+    };
+
+    const displayStart = `${startD}/${startM} ${startH}:${startMin}`;
+    const displayEnd = `${endD}/${endM} ${endH}:${endMin}`;
+    const repeatMsg = repeatVal === 1 ? " (Lặp lại hàng ngày)" : "";
+    const limitMsg = limitM3Val > 0 ? `\n💧 Mục tiêu: ${limitM3Val} m³` : "";
+
+    // Gửi lên Server 
+    fetch('/api/schedules')
+        .then(res => res.json())
+        .then(existingList => {
+            const newStartMins = parseInt(startH) * 60 + parseInt(startMin);
+            const newEndMins = parseInt(endH) * 60 + parseInt(endMin);
+            const newStartMs = startObj.getTime();
+            const newEndMs = endObj.getTime();
+
+            const conflicts = existingList.filter(s => {
+                const sDateObj = new Date(s.startTime);
+                const sEndObj = new Date(s.endTime);
+                const sStartMs = sDateObj.getTime();
+                const sEndMs = sEndObj.getTime();
+                const sStartMins = sDateObj.getHours() * 60 + sDateObj.getMinutes();
+                const sEndMins = sEndObj.getHours() * 60 + sEndObj.getMinutes();
+
+                if (s.repeat == 1 || repeatVal == 1) {
+                    return (newStartMins < sEndMins && newEndMins > sStartMins);
+                } else {
+                    return (newStartMs < sEndMs && newEndMs > sStartMs);
+                }
+            });
+
+            if (conflicts.length > 0) {
+                // Logic xử lý trùng lặp
+                let msg = `⚠️ PHÁT HIỆN TRÙNG LỊCH!\n\nLịch bạn đang đặt (${startH}:${startMin} - ${endH}:${endMin}) bị trùng với:\n`;
+                conflicts.forEach(c => {
+                    const tStart = new Date(c.startTime).toLocaleString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+                    const tEnd = new Date(c.endTime).toLocaleString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+                    msg += `- [${tStart} - ${tEnd}]\n`;
+                });
+                msg += "\n❓ Bạn có muốn XÓA LỊCH CŨ để áp dụng lịch mới không?";
+
+                if (confirm(msg)) {
+                    Promise.all(conflicts.map(c => 
+                        fetch(`/api/schedules/${c.id}`, { method: 'DELETE' })
+                    )).then(() => {
+                        executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg);
+                    });
+                }
+            } else {
+                executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg);
+            }
+        })
+        .catch(err => {
+            console.error("Lỗi:", err);
+            executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg);
+        });
+}
+
+// Hàm tải lịch 
+function loadSchedules() {
+    fetch('/api/schedules').then(res => res.json()).then(data => {
+        const list = document.getElementById('scheduleList');
+        
+        if(data.length === 0) {
+            list.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">Chưa có lịch hẹn nào.</div>';
+            return;
+        }
+
+        //  LOGIC SẮP XẾP 
+        const sortType = document.getElementById('sortSchedule') ? document.getElementById('sortSchedule').value : 'ASC'; 
+        data.sort((a, b) => {
+            const timeA = new Date(a.startTime).getTime();
+            const timeB = new Date(b.startTime).getTime();
+            return (sortType === 'ASC') ? (timeA - timeB) : (timeB - timeA);
+        });
+     
+
+
+list.innerHTML = data.map(s => {
+    const sDate = new Date(s.startTime);
+    const eDate = new Date(s.endTime);
+    const now = new Date();
+
+    // KIỂM TRA LỊCH ĐANG CHẠY
+    const isActive = (now >= sDate && now <= eDate && s.isLocked !== true && !window.globalLocked);
+    
+
+    const cardBg = "#141414"; 
+    const cardBorder = isActive ? "3px solid #00e676" : "1px solid #333";
+    const glowEffect = isActive ? "box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);" : "";
+    const activeColor = isActive ? "#00e676" : "#b388ff"; 
+
+    const startDateStr = sDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const timeStart = sDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' });
+    const timeEnd = eDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' });
+
+    // 3. CHUẨN BỊ CÁC TEM 
+    const repeatTag = s.repeat == 1 
+        ? `<span style="color: #fdd835; font-size: 10px; border: 1px solid #fdd835; padding: 1px 4px; border-radius: 4px; margin-left: 5px;">↻ HÀNG NGÀY</span>` 
+        : `<span style="color: #00b0ff; font-size: 10px; border: 1px solid #00b0ff; padding: 1px 4px; border-radius: 4px; margin-left: 5px;">• MỘT LẦN</span>`;
+    
+    const limitTag = (s.limitM3 && s.limitM3 > 0) 
+        ? `<span style="color: #00e676; font-weight:bold; border:1px solid #00e676; padding:1px 4px; border-radius:4px; font-size: 11px; margin-left: 10px;">DỰ TÍNH: ${s.limitM3}m³</span>` 
+        : '';   
+
+    const runningTag = isActive ? `<span style="background: #00e676; color: #000; padding: 1px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 10px;">● ĐANG CHẠY</span>` : '';
+
+    const modeText = s.finalMode === 'MODE_AUTO' ? 'SAU KHI KẾT THÚC: AUTO' : 'SAU KHI KẾT THÚC: DỪNG';
+    const isLocked = s.isLocked === true;
+    const opacity = (isLocked || window.globalLocked) ? '0.5' : '1';
+
+    // TRẢ VỀ GIAO DIỆN THEO THỨ TỰ 
+    return `
+        <div class="sched-card" style="opacity: ${opacity}; background: ${cardBg}; border: ${cardBorder}; ${glowEffect} transition: 0.5s; position: relative; padding: 15px; margin-bottom: 10px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="sched-info">
+                <div class="sched-time" style="font-size: 15px;">
+                    <span style="color: ${activeColor}">${startDateStr}</span> 
+                    <span style="color:#aaa; margin:0 5px;">|</span> 
+                    <span style="color: ${isActive ? '#00e676' : '#aa00ff'}">${timeStart} - ${timeEnd}</span>
+                    ${runningTag}
+                </div>
+                
+                <div class="sched-meta" style="margin-top: 8px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;">
+                    <span style="color:#00e676; font-weight:bold;">TẦN SỐ ${s.freq}Hz</span> 
+                    ${limitTag} 
+                    ${repeatTag}
+                    <span style="color: #aaa; font-size: 11px; margin-left: 5px;">| ${modeText}</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div onclick="toggleLockSingle(${s.id}, ${!isLocked})" style="color: ${isLocked ? '#ff5252' : '#ffab00'}; cursor: pointer; font-size: 18px;">
+                    <i class="fas ${isLocked ? 'fa-lock' : 'fa-unlock'}"></i>
+                </div>
+                <div class="btn-delete" onclick="deleteSchedule(${s.id})" style="font-size: 18px; color: #d50000; cursor: pointer;"><i class="fas fa-trash"></i></div>
+            </div>
+        </div>
+    `;
+}).join('');
+    });
+}
+        function deleteSchedule(id) {
+            if(!confirm("Bạn có chắc muốn xóa lịch này?")) return;
+            fetch(`/api/schedules/${id}`, { method: 'DELETE' }).then(() => loadSchedules());
+        }
+
+//  CẬP NHẬT GIAO DIỆN 
+function updateDashboard() {
+    fetch('/api/data')
+    .then(res => res.json())
+    .then(data => {
+        // Kiểm tra trạng thái kết nối
+        const sysStatus = data.system_status || 'OFFLINE'; 
+        const isSystemOnline = (sysStatus === 'ON' || sysStatus === 'ONLINE');
+        const OnLight = '#00e676';
+        const OffLight = '#d50000';
+
+        // Cập nhật đèn báo kết nối 
+        const sysConnEl = document.getElementById('sysConnectionStatus');
+        if (sysConnEl) {
+            sysConnEl.innerText = isSystemOnline ? 'ONLINE' : 'OFFLINE';
+            sysConnEl.style.color = isSystemOnline ? OnLight : OffLight; 
+        }
+
+        // TỔNG LƯU LƯỢNG 
+        let rawTotalM3 = parseFloat(data.total_m3 || 0);
+        displayTotalM3 = rawTotalM3; 
+        document.getElementById('totalM3Val').innerText = displayTotalM3.toFixed(3);
+
+
+        //  XỬ LÝ SỐ LIỆU THỜI GIAN THỰC
+        if (isSystemOnline) {
+
+            // Lấy dữ liệu thô
+            let rawFlow = parseFloat(data.flow || 0);
+            let rawRealFreq = parseFloat(data.real_freq || 0);
+            let rawPressure = parseFloat(data.pressure || 0);
+            let rawVoltage = parseFloat(data.voltage || 0);
+
+            displayFlow = smoothData(displayFlow, rawFlow);
+            displayRealFreq = smoothData(displayRealFreq, rawRealFreq);
+            displayPressure = smoothData(displayPressure, rawPressure);
+            displayVoltage = smoothData(displayVoltage, rawVoltage);
+
+            // Hiển thị số liệu thực
+            document.getElementById('flowVal').innerText = displayFlow.toFixed(1);
+            document.getElementById('realFreq').innerText = displayRealFreq.toFixed(0);
+            document.getElementById('pressureVal').innerText = displayPressure.toFixed(1);
+            document.getElementById('voltageVal').innerText = displayVoltage.toFixed(1);
+            document.getElementById('setFreq').innerText = data.set_freq || 0;
+
+            // Xử lý trạng thái chạy/dừng
+            const isRunningState = (data.status === 'ON');
+            const runStatusEl = document.getElementById('runStatus');
+            runStatusEl.innerText = isRunningState ? 'ĐANG CHẠY' : 'DỪNG';
+            runStatusEl.style.color = isRunningState ? 'var(--accent-green)' : 'var(--accent-red)';
+            document.getElementById('modeStatus').innerText = (data.mode === 'MODE_AUTO' || data.mode === 'AUTO') ? 'TỰ ĐỘNG' : 'THỦ CÔNG';
+
+            // XỬ LÝ HIỆU ỨNG HÌNH ẢNH 
+            const isActuallyPumping = isRunningState && (displayRealFreq > 0.5); 
+
+            // 1. SVG Cảm biến
+            const sensorBox = document.getElementById('sensor-cp-box');
+            if (sensorBox) {
+                if (displayPressure < 0) {
+                    sensorBox.setAttribute('fill', '#d50000'); 
+                } else if (displayPressure > 0.5) {
+                    sensorBox.setAttribute('fill', OnLight); 
+                    sensorBox.setAttribute('stroke', OnLight);
+                } else {
+                    sensorBox.setAttribute('fill', '#ddd'); 
+                    sensorBox.setAttribute('stroke', '#555');
+                }
+            }
+
+            // 2. SVG Biến tần
+            const inverterBody = document.getElementById('inverter-case-body');
+            if (inverterBody) {
+                if (displayRealFreq > 0.5) {
+                    inverterBody.setAttribute('stroke', 'var(--accent-green)'); 
+                    inverterBody.setAttribute('stroke-width', '4'); 
+                } else {
+                    inverterBody.setAttribute('stroke', '#111'); 
+                    inverterBody.setAttribute('stroke-width', '2');
+                }
+            }
+
+            // Hiệu ứng nước trong bể
+            const tankWater = document.getElementById('tank-water');
+            if (tankWater) {
+                if (isActuallyPumping) tankWater.classList.add('water-rising');
+                else tankWater.classList.remove('water-rising');
+            }
+
+            // Hiệu ứng Bơm rung và đổi màu
+            const pumpGroup = document.getElementById('pump-inner-group');
+            const pumpBody = document.getElementById('complex-pump-body');
+            const pumpRibs = document.querySelectorAll('.pump-rib');
+
+            if (isActuallyPumping) {
+                if(pumpGroup) pumpGroup.classList.add('pump-running-effect');
+                if(pumpBody) {
+                    pumpBody.setAttribute('fill', 'url(#pumpGradRun)');
+                    pumpBody.setAttribute('stroke', OnLight);
+                }
+                pumpRibs.forEach(rib => rib.setAttribute('stroke', OnLight));
+            } else {
+                if(pumpGroup) pumpGroup.classList.remove('pump-running-effect');
+                if(pumpBody) {
+                    pumpBody.setAttribute('fill', 'url(#pumpGradStop)');
+                    pumpBody.setAttribute('stroke', OffLight);
+                }
+                pumpRibs.forEach(rib => rib.setAttribute('stroke', '#b71c1c'));
+            }
+
+            // Hiệu ứng Nước chảy trong ống
+            const pipeEl = document.getElementById('svg-pipe');
+            if(pipeEl) {
+                if (isActuallyPumping) {
+                    pipeEl.setAttribute('stroke', 'none'); 
+                    pipeEl.classList.add('water-flow');
+                } else {
+                    pipeEl.setAttribute('stroke', 'url(#pipeGradStatic)');
+                    pipeEl.classList.remove('water-flow');
+                }
+            }
+
+        } else {
+            // KHI OF THÌ ĐƯA CHỈ SỐ VỀ --
+            
+        
+            document.getElementById('flowVal').innerText = "--";
+            document.getElementById('realFreq').innerText = "--";
+            document.getElementById('pressureVal').innerText = "--";
+            document.getElementById('voltageVal').innerText = "--";
+            
+        
+            const runStatusEl = document.getElementById('runStatus');
+            runStatusEl.innerText = 'MẤT TÍN HIỆU';
+            runStatusEl.style.color = '#777'; 
+            
+
+            const tankWater = document.getElementById('tank-water');
+            if (tankWater) tankWater.classList.remove('water-rising');
+
+            const pumpGroup = document.getElementById('pump-inner-group');
+            if(pumpGroup) pumpGroup.classList.remove('pump-running-effect');
+            
+    
+            const pipeEl = document.getElementById('svg-pipe');
+            if(pipeEl) {
+                pipeEl.setAttribute('stroke', 'url(#pipeGradStatic)');
+                pipeEl.classList.remove('water-flow');
+            }
+            const pumpBody = document.getElementById('complex-pump-body');
+            const pumpRibs = document.querySelectorAll('.pump-rib');
+            if(pumpBody) {
+                pumpBody.setAttribute('fill', 'url(#pumpGradStop)');
+                pumpBody.setAttribute('stroke', OffLight);
+            }
+            pumpRibs.forEach(rib => rib.setAttribute('stroke', '#b71c1c'));
+        }
+    })
+    .catch(err => {
+        // TRƯỜNG HỢP LỖI MẠNG CLIENT/SERVER SẬP 
+        const sysConnEl = document.getElementById('sysConnectionStatus');
+        if (sysConnEl) {
+            sysConnEl.innerText = 'OFFLINE'; 
+            sysConnEl.style.color = '#d50000'; 
+        }
+        
+        // giữ Tổng lưu lượng cũ 
+        document.getElementById('flowVal').innerText = "--";
+        document.getElementById('realFreq').innerText = "--";
+        document.getElementById('pressureVal').innerText = "--";
+        document.getElementById('voltageVal').innerText = "--";
+        document.getElementById('runStatus').innerText = 'MẤT KẾT NỐI';
+        document.getElementById('runStatus').style.color = '#777';
+    });
+}
+
+        // LOGIC CHART.JS VÀ LỊCH SỬ GOOGLE SHEETS
+        //  URL Google Sheet 
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz7FfMnGmtgBlBcAgFWGW4MEDSIs7i8iSCuzHCwI0_m7kDjYxw0xnT7US9e9HiT_3-X/exec";
+        
+        let isViewingHistory = false; 
+
+        let pressureChart = null;
+        let freqChart = null;
+        let hourlyChart = null; 
+
+        function initChart() {
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',      
+                    intersect: false,   
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(20, 20, 20, 0.9)',
+                        titleColor: '#fff',
+                        bodyFont: { size: 14, weight: 'bold' },
+                        padding: 10,
+                        displayColors: false,
+                    }
+                },
+                scales: {
+                    x: { 
+                        ticks: { color: '#888', maxTicksLimit: 6 }, 
+                        grid: { color: '#333' } 
+                    }
+                }
+            };
+
+           
+            const ctxP = document.getElementById('pressureChart').getContext('2d');
+            let gradPress = ctxP.createLinearGradient(0, 0, 0, 300);
+            gradPress.addColorStop(0, 'rgba(0, 176, 255, 0.5)'); 
+            gradPress.addColorStop(1, 'rgba(0, 176, 255, 0)');
+
+          // --- CHART ÁP SUẤT ---
+pressureChart = new Chart(ctxP, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'Áp suất',
+            data: [],
+            borderColor: '#00b0ff',
+            backgroundColor: gradPress,
+            fill: true
+        }]
+    },
+    options: {
+        ...commonOptions, 
+        scales: {
+            ...commonOptions.scales,
+            y: {
+                min: 0, 
+                max: 5, 
+                ticks: { 
+                    color: '#00b0ff',
+                    font: { weight: 'bold' },
+                    callback: function(value) { return value + ' Bar'; } 
+                },
+                grid: { color: '#333' }
+            }
+        },
+        plugins: {
+            ...commonOptions.plugins,
+            //  Cấu hình Zoom/Pan 
+            zoom: {
+                pan: {
+                    enabled: true,
+                    mode: 'x', 
+                    threshold: 10
+                },
+                zoom: {
+                    wheel: { enabled: true },
+                    pinch: { enabled: true },
+                    mode: 'x',
+                }
+            },
+            // -----------------------------------------------------
+            tooltip: {
+                ...commonOptions.plugins.tooltip,
+                callbacks: {
+                    label: function(context) {
+                        return context.parsed.y + ' Bar'; 
+                    }
+                }
+            }
+        }
+    }
+});
+
+// CHART TẦN SỐ 
+const ctxF = document.getElementById('freqChart').getContext('2d');
+let gradFreq = ctxF.createLinearGradient(0, 0, 0, 300);
+gradFreq.addColorStop(0, 'rgba(0, 230, 118, 0.5)'); 
+gradFreq.addColorStop(1, 'rgba(0, 230, 118, 0)');
+
+freqChart = new Chart(ctxF, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'Tần số',
+            data: [],
+            borderColor: '#00e676',
+            backgroundColor: gradFreq,
+            fill: true
+        }]
+    },
+    options: {
+        ...commonOptions,
+        scales: {
+            ...commonOptions.scales,
+            y: {
+                min: 0, 
+                max: 50,
+                ticks: { 
+                    color: '#00e676',
+                    font: { weight: 'bold' },
+                    callback: function(value) { return value + ' Hz'; }
+                },
+                grid: { color: '#333' }
+            }
+        },
+        plugins: {
+            ...commonOptions.plugins,
+            // Cấu hình Zoom/Pan cho Tần số
+            zoom: {
+                pan: {
+                    enabled: true,
+                    mode: 'x', 
+                    threshold: 10
+                },
+                zoom: {
+                    wheel: { enabled: true },
+                    pinch: { enabled: true },
+                    mode: 'x',
+                }
+            },
+            // -----------------------------------------------------
+            tooltip: {
+                ...commonOptions.plugins.tooltip,
+                callbacks: {
+                    label: function(context) {
+                        return context.parsed.y + ' Hz'; 
+                    }
+                }
+            }
+        }
+    }
+});
+
+            // biểu đồ cột lưu lượng
+            const ctxH = document.getElementById('hourlyChart').getContext('2d');
+            let gradBar = ctxH.createLinearGradient(0, 0, 0, 300);
+            gradBar.addColorStop(0, '#00e5ff');
+            gradBar.addColorStop(1, 'rgba(0, 229, 255, 0.2)');
+
+            window.hourlyChart = new Chart(ctxH, {
+                type: 'bar',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => i + 'h'),
+                    datasets: [{
+                        label: 'Sử dụng (m³)',
+                        data: Array(24).fill(0),
+                        backgroundColor: gradBar,
+                        borderColor: '#00e5ff',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        barPercentage: 0.6,
+                        maxBarThickness: 60 
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            min: 0,
+                            max: 100, 
+                            ticks: { 
+                                stepSize: 10,
+                                color: '#bbb'
+                            },
+                            grid: { color: '#333' }
+                        },
+                        x: {
+                            grid: { display: false }, 
+                            ticks: { color: '#bbb' },
+                            min: 0,
+                            max: 4
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw.toFixed(3) + ' m³';
+                                }
+                            }
+                        },
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x', 
+                                threshold: 10
+                            },
+                            zoom: { enabled: false },
+                            limits: { x: { min: 0, max: 23 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // HÀM LẤY DỮ LIỆU LỊCH SỬ TỪ GOOGLE SHEET 
+      function fetchHistoryData() {
+            const datePicker = document.getElementById('historyDateInput');
+            const dateVal = datePicker.value; // Dạng yyyy-mm-dd
+            
+            if (!dateVal) {
+                alert("Vui lòng chọn ngày trước!");
+                return;
+            }
+
+            const btn = document.querySelector('button[onclick="fetchHistoryData()"]');
+            const oldText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...';
+            
+            // Gọi sang URL Google Sheet 
+            fetch(`${GAS_API_URL}?action=getHistory&date=${dateVal}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data || data.length === 0) {
+                    alert(`Không có dữ liệu cho ngày ${dateVal}`);
+                    btn.innerHTML = oldText;
+                    return;
+                }
+
+           
+                updateChartsWithHistory(data);
+                
+                alert(`Đã tải ${data.length} điểm dữ liệu!`);
+                btn.innerHTML = oldText;
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Lỗi kết nối tới Google Sheet! (Hãy kiểm tra quyền 'Bất kỳ ai' trong App Script)");
+                btn.innerHTML = oldText;
+            });
+        }
+
+        function updateChartsWithHistory(data) {
+            // Chuyển sang chế độ xem lịch sử
+            isViewingHistory = true;
+
+            // Trích xuất các mảng dữ liệu từ kết quả JSON trả về
+            const labels = data.map(d => d.time);
+            const pressData = data.map(d => d.pressure);
+            const freqData = data.map(d => d.freq);
+            const flowData = data.map(d => d.flow); 
+
+            //  Cập nhật Biểu đồ Áp suất
+            if (pressureChart) {
+                pressureChart.data.labels = labels;
+                pressureChart.data.datasets[0].data = pressData;
+                pressureChart.data.datasets[0].label = "Áp suất (Lịch sử)";
+                pressureChart.update();
+            }
+            
+            //  Cập nhật Biểu đồ Tần số
+            if (freqChart) {
+                freqChart.data.labels = labels;
+                freqChart.data.datasets[0].data = freqData;
+                freqChart.data.datasets[0].label = "Tần số (Lịch sử)";
+                freqChart.update();
+            }
+
+            //  Cập nhật Biểu đồ Lưu lượng 
+            if (window.hourlyChart) {
+             
+                window.hourlyChart.data.labels = labels; 
+                window.hourlyChart.data.datasets[0].data = flowData;
+                window.hourlyChart.data.datasets[0].label = "Lưu lượng (Lịch sử)";
+                
+               
+                window.hourlyChart.options.scales.x.max = labels.length > 10 ? 10 : labels.length;
+                
+                window.hourlyChart.update();
+            }
+        }
+
+        function resetCharts() {
+            isViewingHistory = false; 
+            window.location.reload(); 
+        }
+
+        // HÀM CẬP NHẬT CHART 
+       function updateChart() {
+      
+            if (isViewingHistory || !document.getElementById('chart-tab').classList.contains('active')) return;
+
+            // Cập nhật 2 biểu đồ áp suất và tần số
+            fetch('/api/history')
+                .then(res => res.json())
+                .then(data => {
+                    if (!pressureChart || !freqChart || data.length === 0) return;
+                    
+                    const labels = data.map(d => d.time);
+                    
+                    pressureChart.data.labels = labels;
+                    pressureChart.data.datasets[0].data = data.map(d => d.pressure);
+                    pressureChart.data.datasets[0].label = "Áp suất"; // Reset lại label
+                    pressureChart.update('none'); 
+
+                    freqChart.data.labels = labels;
+                    freqChart.data.datasets[0].data = data.map(d => d.real_freq);
+                    freqChart.data.datasets[0].label = "Tần số"; // Reset lại label
+                    freqChart.update('none');
+                })
+                .catch(err => console.log("Lỗi lấy dữ liệu history:", err));
+
+            // Cập nhật biểu đồ Cột 
+            fetch('/api/daily-usage')
+                .then(res => res.json())
+                .then(data => {
+                    if (window.hourlyChart && data.hourly) {
+                        window.hourlyChart.data.datasets[0].data = data.hourly;
+                        window.hourlyChart.update('none');
+                    }
+                })
+                .catch(err => console.log("Lỗi lấy dữ liệu daily-usage:", err));
+        }
+
+        // KHỞI CHẠY TẤT CẢ
+        initChart();
+        setInterval(updateChart, 1500); 
+        setInterval(updateDashboard, 1500); 
+        updateDashboard();
+
+        // LOGIC CHAT BOT TRÊN WEB
+function toggleChatWindow() {
+    const win = document.getElementById('chatWindow');
+    const badge = document.getElementById('chatBadge');
+    
+    win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
+    
+  
+    if (win.style.display === 'flex') {
+        badge.style.display = 'none';
+        badge.innerText = '0';
+        setTimeout(() => document.getElementById('chatInput').focus(), 100);
+    }
+}
+
+function handleChatEnter(e) {
+    if (e.key === 'Enter') sendChatMsg();
+}
+
+function sendChatMsg(txt = null) {
+    const input = document.getElementById('chatInput');
+    const msg = txt || input.value.trim();
+    if (!msg) return;
+
+    //  Hiển thị tin nhắn của người dùng
+    const body = document.getElementById('chatBody');
+    body.innerHTML += `<div class="msg-bubble msg-user">${msg}</div>`;
+    input.value = '';
+
+    const sugg = document.getElementById('chatSuggestions');
+    if(sugg) sugg.style.display = 'none';
+
+
+    body.scrollTop = body.scrollHeight;
+
+    // Gửi API lên Server
+    fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg })
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Hiển thị phản hồi từ Bot
+        setTimeout(() => {
+            body.innerHTML += `<div class="msg-bubble msg-bot">${data.reply}</div>`;
+            body.scrollTop = body.scrollHeight;
+        }, 300);
+    })
+    .catch(err => {
+        console.error("Chat Error:", err);
+        body.innerHTML += `<div class="msg-bubble msg-bot" style="color: #d50000;">Lỗi kết nối Server!</div>`;
+    });
+}
+// TỰ ĐỘNG CẬP NHẬT CẢNH BÁO VÀO CHATBOT
+function pollSystemNotifications() {
+    fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: "__CHECK_NOTIFICATIONS__" })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.notifications && data.notifications.length > 0) {
+            const body = document.getElementById('chatBody');
+            const chatWin = document.getElementById('chatWindow');
+            const chatBtn = document.querySelector('.chat-btn-floating');
+            const badge = document.getElementById('chatBadge');
+
+           data.notifications.forEach(msg => {
+                let finalMsg = msg;
+                let customStyle = "";
+                let customClass = "msg-bot"; 
+
+                // 1Kiểm tra nếu là tin nhắn từ CMD 
+                if (msg.startsWith("[ADMIN_MSG]")) {
+                    finalMsg = "<b>🙉 Admin:</b> " + msg.replace("[ADMIN_MSG]", "");
+                    customClass = "msg-user"; // Class này có màu xanh dương
+                    // Thêm style để nằm bên trái và bo góc cho đẹp
+                    customStyle = "align-self: flex-start; border-bottom-left-radius: 2px; border-bottom-right-radius: 10px; background: var(--accent-blue); color: white;";
+                } 
+                //  Nếu là tin nhắn cảnh báo hệ thống (🚨 THÔNG BÁO)
+                else {
+                    customStyle = "border-left: 4px solid var(--accent-red); background: #2c1a1a;";
+                }
+
+                body.innerHTML += `
+                    <div class="msg-bubble ${customClass}" style="${customStyle}">
+                        ${finalMsg}
+                    </div>`;
+                
+                // Logic thông báo chấm đỏ và âm thanh -
+                if (chatWin.style.display !== 'flex') {
+                    let currentCount = parseInt(badge.innerText);
+                    badge.innerText = currentCount + 1;
+                    badge.style.display = 'block';
+                    let audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'); 
+                    audio.play();
+                    chatBtn.style.animation = "pumpShake 0.1s 5"; 
+                }
+            }); 
+
+            body.scrollTop = body.scrollHeight;
+        }
+    }) 
+    .catch(err => console.error("Lỗi lấy cảnh báo:", err)); 
+}
+
+
+setInterval(pollSystemNotifications, 1000);
+
+function checkLogin() {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    const errorMsg = document.getElementById('loginError');
+
+
+    if (user === 'admin' && pass === '12345') {
+        // Ẩn khung đăng nhập
+        document.getElementById('loginOverlay').style.display = 'none';
+        sessionStorage.setItem('isLoggedIn', 'true');
+    } else {
+        errorMsg.style.display = 'block';
+        const box = document.querySelector('#loginOverlay div');
+        box.style.animation = 'pumpShake 0.1s 3';
+        setTimeout(() => box.style.animation = '', 300);
+    }
+}
+
+
+window.onload = function() {
+    if (sessionStorage.getItem('isLoggedIn') === 'true') {
+        document.getElementById('loginOverlay').style.display = 'none';
+    }
+
+    //  Tự động set ngày hôm nay khi load trang
+    const dateInput = document.getElementById('historyDateInput');
+    const now = new Date();
+    // Lấy ngày tháng năm theo múi giờ VN
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    dateInput.value = `${year}-${month}-${day}`;
+};
+
+const togglePassword = document.querySelector('#togglePassword');
+const passwordInput = document.querySelector('#password');
+
+togglePassword.addEventListener('click', function (e) {
+ 
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    
+    
+    this.classList.toggle('fa-eye-slash');
+    
+   
+    this.style.color = type === 'text' ? 'var(--accent-blue)' : '#777';
+});
+
+// [MỚI] XỬ LÝ KÉO THẢ NGANG 
+const sliders = document.querySelectorAll('.drag-scroll');
+sliders.forEach(slider => {
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    slider.addEventListener('mousedown', (e) => {
+        isDown = true;
+        slider.classList.add('active'); 
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+    });
+    
+    slider.addEventListener('mouseleave', () => {
+        isDown = false;
+        slider.classList.remove('active');
+    });
+    
+    slider.addEventListener('mouseup', () => {
+        isDown = false;
+        slider.classList.remove('active');
+    });
+    
+    slider.addEventListener('mousemove', (e) => {
+        if(!isDown) return;
+        e.preventDefault(); 
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 2; 
+        slider.scrollLeft = scrollLeft - walk;
+    });
+});
+
+        // LOGIC KHÓA LỊCH 
+        window.globalLocked = false;
+
+        async function toggleLockAll() {
+            window.globalLocked = !window.globalLocked;
+            await fetch('/api/schedules/lock-all', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ locked: window.globalLocked })
+            });
+            updateLockAllUI();
+            loadSchedules(); 
+        }
+
+        function updateLockAllUI() {
+            const icon = document.getElementById('iconLockAll');
+            const text = document.getElementById('textLockAll');
+            const btn = document.getElementById('btnLockAll');
+            
+            if (window.globalLocked) {
+                icon.className = 'fas fa-lock';
+                text.innerText = 'ĐÃ KHÓA TOÀN BỘ';
+                btn.style.color = '#ff5252'; 
+            } else {
+                icon.className = 'fas fa-unlock';
+                text.innerText = 'ĐANG MỞ';
+                btn.style.color = '#ffab00'; 
+            }
+        }
+
+        async function toggleLockSingle(id, lockedState) {
+            await fetch(`/api/schedules/${id}/lock`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ locked: lockedState })
+            });
+            loadSchedules();
+        }
+
+        // Kiểm tra trạng thái khóa khi tải trang
+        fetch('/api/schedules-status')
+            .then(res => res.json())
+            .then(data => {
+                window.globalLocked = data.isAllSchedulesLocked;
+                updateLockAllUI();
+            });
+    </script>
+</body>
+</html>
