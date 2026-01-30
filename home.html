@@ -8,13 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
     
     <style>
-     
         * { box-sizing: border-box; }
 
         :root {
@@ -40,22 +37,19 @@
             font-weight: 500;
         }
         
-      
         input[type="date"] {
             position: relative;
             padding-right: 25px; 
             cursor: pointer;
         }
 
-  
         input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1); /* Đảo màu đen thành trắng */
+            filter: invert(1);
             opacity: 1;
             cursor: pointer;
             width: 20px;
             height: 20px;
         }
-
 
         svg path, svg rect, svg line, svg circle {
             transition: all 0.5s ease-out;
@@ -72,7 +66,6 @@
         .pump-running-effect { animation: pumpShake 0.1s infinite; filter: brightness(1.2) drop-shadow(0 0 5px #00e676); }
         @keyframes pumpShake { 0% { transform: translate(0, 0); } 25% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, 0); } 75% { transform: translate(0, -1px); } 100% { transform: translate(0, 0); } }
 
-        /* HEADER  */
         .header-title {
             background: #004d40; 
             color: white;
@@ -92,18 +85,15 @@
         .header-main-text { font-size: 20px; font-weight: 700; letter-spacing: 1px; margin-bottom: 2px; }
         #datetimeDisplay.header-datetime { color: #b2dfdb; font-size: 0.85em; font-weight: 600; padding: 0 15px 5px 15px; text-align: center; }
 
-        /* LAYOUT CHÍNH  */
         .main-content {
             width: 100%;
             height: calc(100vh - 120px); 
             padding-bottom: 60px;
-            /* [FIX] Luôn hiện thanh cuộn dọc để tránh giật màn hình khi nội dung thay đổi */
             overflow-y: scroll; 
         }
         .tab-content { display: none; width: 100%; min-height: 100%; }
         .tab-content.active { display: block; }
         
-        /*  SCADA TAB  */
         #scada-tab {
             overflow: hidden; 
             background-color: var(--scada-bg); 
@@ -137,7 +127,6 @@
         .zoom-bar input { width: 100%; cursor: pointer; accent-color: var(--accent-blue); }
         .zoom-bar span { color: var(--accent-blue); font-weight: 700; font-size: 15px; font-family: 'Quicksand', sans-serif; }
 
-        /*  BẢNG ĐIỀU KHIỂN */
         .sidebar-toggle-btn {
             position: absolute;
             top: 20px;
@@ -173,8 +162,8 @@
             border-right: 1px solid #444;
             display: flex;
             flex-direction: column;
-            border-radius: 0 20px 20px 0; /* Bo tròn góc trên và dưới bên phải */
-            overflow: hidden; /* Quan trọng: Để nội dung bên trong không tràn ra khỏi góc bo */
+            border-radius: 0 20px 20px 0; 
+            overflow: hidden; 
              border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
@@ -238,86 +227,82 @@
         .btn-adjust { background: #333; color: white; width: 40px; height: 40px; border: 1px solid #555; border-radius: 8px; cursor: pointer; }
         .input-freq-sb { background: #000; color: var(--accent-green); border: 1px solid #444; height: 40px; width: 80px; text-align: center; font-size: 20px; font-weight: 700; border-radius: 8px; }
 
-        /* BẢNG QUAN TRẮC  */
-.monitor-panel {
-    position: absolute;
-    top: 50px; 
-    right: 50px; 
-    width: 400px;
-    z-index: 100;
-    display: grid;
-    grid-template-columns: 1fr 1fr; 
-    gap: 10px; 
-    background: rgba(15, 15, 15, 0.9); 
-    backdrop-filter: blur(15px); 
-    border: 1px solid rgba(255, 255, 255, 0.15); 
-    border-radius: 20px; 
-    padding: 15px; 
-}
+        .monitor-panel {
+            position: absolute;
+            top: 50px; 
+            right: 50px; 
+            width: 400px;
+            z-index: 100;
+            display: grid;
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            background: rgba(15, 15, 15, 0.9); 
+            backdrop-filter: blur(15px); 
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            border-radius: 20px; 
+            padding: 15px; 
+        }
 
-.monitor-title {
-    grid-column: span 2; 
-    text-align: center;
-    color: var(--accent-blue);
-    font-weight: 700;
-    font-size: 16px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-}
+        .monitor-title {
+            grid-column: span 2; 
+            text-align: center;
+            color: var(--accent-blue);
+            font-weight: 700;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
 
+        .row-full {
+            grid-column: span 2;
+        }
 
-.row-full {
-    grid-column: span 2;
-}
+        .monitor-panel .card-stat {
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 12px; 
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+        }
 
-.monitor-panel .card-stat {
-    background: rgba(255, 255, 255, 0.03); 
-    border: 1px solid rgba(255, 255, 255, 0.08); 
-    border-radius: 12px; 
-    padding: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.3s;
-}
+        .monitor-panel .card-stat:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-blue);
+        }
 
-.monitor-panel .card-stat:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--accent-blue);
-}
+        .monitor-panel .card-icon {
+            width: 38px;
+            height: 38px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
 
-.monitor-panel .card-icon {
-    width: 38px;
-    height: 38px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 50%;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
+        .monitor-panel .stat-label {
+            font-size: 10px;
+            margin-bottom: 2px;
+            color: #aaa;
+            font-weight: 600;
+        }
 
-.monitor-panel .stat-label {
-    font-size: 10px;
-    margin-bottom: 2px;
-    color: #aaa;
-    font-weight: 600;
-}
+        .monitor-panel .stat-value {
+            font-size: 17px;
+            font-weight: 700;
+        }
 
-.monitor-panel .stat-value {
-    font-size: 17px;
-    font-weight: 700;
-}
+        @media screen and (max-width: 768px) {
+            .monitor-panel { display: none; }
+        }  
 
-/* Responsive cho mobile */
-@media screen and (max-width: 768px) {
-    .monitor-panel { display: none; }
-}  
-
-        /* TYLE LỊCH BIỂU */
         .container { max-width: 650px; margin: 0 auto; padding: 15px; }
         .section-title { margin-top: 0; margin-bottom: 25px; padding-left: 15px; border-left: 4px solid; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
         .btn-add-schedule { background-color: var(--accent-purple); color: white; width: 40px; height: 40px; border-radius: 50%; border: none; font-size: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4); margin-bottom: 0 !important; pointer-events: none; }
@@ -339,7 +324,6 @@
         .add-sched-text { color: var(--accent-purple); font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; }
         .add-sched-row:hover .add-sched-text { color: #b388ff; }
 
-        /*STYLE CHO CHART - */
         .chart-row-container {
             display: flex;
             flex-direction: row; 
@@ -349,7 +333,6 @@
             min-height: 350px;
             padding-bottom: 10px;
         }
-
 
        .chart-wrapper {
             background: #141414; 
@@ -364,7 +347,6 @@
             position: relative; 
             overflow: hidden; 
         }
-
   
         canvas {
             width: 100% !important;
@@ -393,7 +375,6 @@
          }
     }
 
-        /* THANH ĐIỀU HƯỚNG */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
             background-color: #1a1a1a; border-top: 1px solid #333;
@@ -412,7 +393,6 @@
         .nav-item.active::after { content: ''; position: absolute; top: 0; left: 25%; width: 50%; height: 3px; background: var(--accent-blue); border-radius: 0 0 4px 4px; box-shadow: 0 2px 5px var(--accent-blue); }
         .nav-item:active { transform: scale(0.95); }
 
-        /*BẢNG CHAT STYLE*/
         .chat-btn-floating {
             position: fixed; bottom: 80px; right: 20px;
             width: 50px; height: 50px;
@@ -523,7 +503,6 @@
         }
         .chip:hover { background: var(--accent-blue); color: white; }
 
-        /*STYLE CHO KHUNG KÉO THẢ */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
@@ -1012,7 +991,6 @@
         let displayRealFreq = 0;
         let displayVoltage = 0;
         
-        // Hệ số làm mượt 
         const SMOOTH_FACTOR = 1.0; 
 
     
@@ -1030,7 +1008,6 @@
             }
         }
 
-        // SCADA ZOOM
         const scadaContainer = document.getElementById('scadaScaleContainer');
         const zoomSlider = document.getElementById('zoomSlider');
         const zoomValText = document.getElementById('zoomVal');
@@ -1044,7 +1021,6 @@
             });
         }
 
-        // 
         function switchTab(tabId, element) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -1065,10 +1041,8 @@
                 loadSchedules();
             }
         }
-        // Mặc định hiện zoomBar ở tab SCADA
         if(zoomBar) zoomBar.style.display = 'flex';
 
-        // --- ĐỒNG HỒ ---
         function updateDateTime() {
             const now = new Date();
             document.getElementById('datetimeDisplay').innerHTML = now.toLocaleString('vi-VN');
@@ -1078,7 +1052,6 @@
         setInterval(updateDateTime, 1000);
         updateDateTime();
 
-        // ĐIỀU KHIỂN TẦN SỐ 
         function adjustFreq(delta) {
             const input = document.getElementById('inputFreq');
             let val = parseFloat(input.value) + delta;
@@ -1089,7 +1062,7 @@
         function sendCommand(cmd, val = null) {
             let body = { command: cmd };
             if(val !== null) body.value = parseFloat(val); 
-            fetch('/api/control', {
+            fetch('/api/control', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
@@ -1097,23 +1070,21 @@
         }
 
         function sendFreq() {
-    const freqInput = document.getElementById('inputFreq').value;
-    const freqVal = parseFloat(freqInput);
+            const freqInput = document.getElementById('inputFreq').value;
+            const freqVal = parseFloat(freqInput);
 
-    // Kiểm tra lớn hơn tần số 40
-    if (freqVal > 40) {
-        const confirmAction = confirm(`⚠️ CẢNH BÁO: Đặt tần số cao (${freqVal}Hz) có thể gây hư hỏng động cơ. Bạn có chắc chắn muốn cài đặt không?`);
-        
-        if (!confirmAction) {
-            console.log("Lệnh đã bị hủy bởi người dùng.");
-            return; 
+            if (freqVal > 40) {
+                const confirmAction = confirm(`⚠️ CẢNH BÁO: Đặt tần số cao (${freqVal}Hz) có thể gây hư hỏng động cơ. Bạn có chắc chắn muốn cài đặt không?`);
+                
+                if (!confirmAction) {
+                    console.log("Lệnh đã bị hủy bởi người dùng.");
+                    return; 
+                }
+            }
+
+            sendCommand('SET_FREQ', freqInput);
         }
-    }
 
-    sendCommand('SET_FREQ', freqInput);
-}
-
-        // LOGIC LỊCH BIỂU 
         function populateSelect(id, start, end) {
             const select = document.getElementById(id);
             select.innerHTML = '';
@@ -1169,439 +1140,391 @@
             }
         }
 
-      // nhiệm vụ gửi lệnh lưu xuống Server 
-function executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg) {
-    fetch('/api/schedules', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.status === "success") {
-       
-            alert(`✅ Lên lịch thành công!${repeatMsg}\n\n▶️ Bắt đầu: ${displayStart}\n⏹️ Kết thúc: ${displayEnd}${limitMsg}`);
+        function executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg) {
+            fetch('/api/schedules', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === "success") {
             
-          
-            document.getElementById('schedForm').style.display = 'none';
-            loadSchedules();
-        } else {
-            alert("❌ Lỗi server: " + result.message);
-        }
-    })
-    .catch(err => {
-        alert("❌ Lỗi kết nối!");
-        console.error(err);
-    });
-}
-
-
-//  GỬI DỮ LIỆU LÊN SERVER 
-function executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg) {
-    fetch('/api/schedules', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.status === "success") {
-            alert(`✅ Lên lịch thành công!${repeatMsg}\n\n▶️ Bắt đầu: ${displayStart}\n⏹️ Kết thúc: ${displayEnd}${limitMsg}`);
-            document.getElementById('schedForm').style.display = 'none';
-            loadSchedules();
-        } else {
-            alert("❌ Lỗi server: " + result.message);
-        }
-    })
-    .catch(err => {
-        alert("❌ Lỗi kết nối!");
-        console.error(err);
-    });
-}
-
-
-//  Hàm thêm lịch mới 
-function addScheduleNew() {
-    // Lấy dữ liệu từ Form
-    const startY = document.getElementById('selYear').value;
-    const startM = document.getElementById('selMonth').value;
-    const startD = document.getElementById('selDate').value;
-    const startH = document.getElementById('selHour').value;
-    const startMin = document.getElementById('selMin').value;
-    const startTime = `${startY}-${startM}-${startD}T${startH}:${startMin}`;
-
-    const endY = document.getElementById('selYearEnd').value;
-    const endM = document.getElementById('selMonthEnd').value;
-    const endD = document.getElementById('selDateEnd').value;
-    const endH = document.getElementById('selHourEnd').value;
-    const endMin = document.getElementById('selMinEnd').value;
-    const endTime = `${endY}-${endM}-${endD}T${endH}:${endMin}`;
-
-    const freqVal = parseFloat(document.getElementById('selFreq').value);
-    const finalMode = document.getElementById('selFinalMode').value;
-    const repeatVal = parseInt(document.getElementById('selRepeat').value);
-    const limitM3Val = parseFloat(document.getElementById('selLimitM3').value) || 0;
-
-    //  dữ liệu thời gian thực
-    const startObj = new Date(startTime);
-    const endObj = new Date(endTime);
-    const now = new Date(); 
-
-
-    
-    // Hàm tránh đặt ngược thời gian
-    if (endObj.getTime() < now.getTime() - 60000) {
-        alert("❌ Lỗi: Thời gian kết thúc đã ở trong quá khứ!\nVui lòng đặt lịch cho hiện tại hoặc tương lai.");
-        return;
-    }
-
-
-    if (repeatVal === 0 && startObj.getTime() < now.getTime() - 24 * 60 * 60 * 1000) {
-         alert("❌ Lỗi: Ngày bắt đầu đã trôi qua từ hôm qua rồi sếp ơi!");
-         return;
-    }
-    // --------------------------------
-
-    if (endObj <= startObj) {
-        alert("❌ Lỗi: Thời gian kết thúc phải sau thời gian bắt đầu!");
-        return;
-    }
-    if (isNaN(freqVal) || freqVal < 0 || freqVal > 50) {
-        alert("❌ Tần số phải nằm trong khoảng 0-50Hz!");
-        return;
-    }
-
-    // Chuẩn bị gói dữ liệu lịch biẻu
-    const data = {
-        startTime: startTime,
-        endTime: endTime,
-        freq: freqVal,
-        action: "RUN",
-        finalMode: finalMode,
-        repeat: repeatVal,
-        limitM3: limitM3Val
-    };
-
-    const displayStart = `${startD}/${startM} ${startH}:${startMin}`;
-    const displayEnd = `${endD}/${endM} ${endH}:${endMin}`;
-    const repeatMsg = repeatVal === 1 ? " (Lặp lại hàng ngày)" : "";
-    const limitMsg = limitM3Val > 0 ? `\n💧 Mục tiêu: ${limitM3Val} m³` : "";
-
-    // Gửi lên Server 
-    fetch('/api/schedules')
-        .then(res => res.json())
-        .then(existingList => {
-            const newStartMins = parseInt(startH) * 60 + parseInt(startMin);
-            const newEndMins = parseInt(endH) * 60 + parseInt(endMin);
-            const newStartMs = startObj.getTime();
-            const newEndMs = endObj.getTime();
-
-            const conflicts = existingList.filter(s => {
-                const sDateObj = new Date(s.startTime);
-                const sEndObj = new Date(s.endTime);
-                const sStartMs = sDateObj.getTime();
-                const sEndMs = sEndObj.getTime();
-                const sStartMins = sDateObj.getHours() * 60 + sDateObj.getMinutes();
-                const sEndMins = sEndObj.getHours() * 60 + sEndObj.getMinutes();
-
-                if (s.repeat == 1 || repeatVal == 1) {
-                    return (newStartMins < sEndMins && newEndMins > sStartMins);
+                    alert(`✅ Lên lịch thành công!${repeatMsg}\n\n▶️ Bắt đầu: ${displayStart}\n⏹️ Kết thúc: ${displayEnd}${limitMsg}`);
+                    
+                    document.getElementById('schedForm').style.display = 'none';
+                    loadSchedules();
                 } else {
-                    return (newStartMs < sEndMs && newEndMs > sStartMs);
+                    alert("❌ Lỗi server: " + result.message);
                 }
+            })
+            .catch(err => {
+                alert("❌ Lỗi kết nối!");
+                console.error(err);
             });
-
-            if (conflicts.length > 0) {
-                // Logic xử lý trùng lặp
-                let msg = `⚠️ PHÁT HIỆN TRÙNG LỊCH!\n\nLịch bạn đang đặt (${startH}:${startMin} - ${endH}:${endMin}) bị trùng với:\n`;
-                conflicts.forEach(c => {
-                    const tStart = new Date(c.startTime).toLocaleString('vi-VN', {hour:'2-digit', minute:'2-digit'});
-                    const tEnd = new Date(c.endTime).toLocaleString('vi-VN', {hour:'2-digit', minute:'2-digit'});
-                    msg += `- [${tStart} - ${tEnd}]\n`;
-                });
-                msg += "\n❓ Bạn có muốn XÓA LỊCH CŨ để áp dụng lịch mới không?";
-
-                if (confirm(msg)) {
-                    Promise.all(conflicts.map(c => 
-                        fetch(`/api/schedules/${c.id}`, { method: 'DELETE' })
-                    )).then(() => {
-                        executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg);
-                    });
-                }
-            } else {
-                executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg);
-            }
-        })
-        .catch(err => {
-            console.error("Lỗi:", err);
-            executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg);
-        });
-}
-
-// Hàm tải lịch 
-function loadSchedules() {
-    fetch('/api/schedules').then(res => res.json()).then(data => {
-        const list = document.getElementById('scheduleList');
-        
-        if(data.length === 0) {
-            list.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">Chưa có lịch hẹn nào.</div>';
-            return;
         }
 
-        //  LOGIC SẮP XẾP 
-        const sortType = document.getElementById('sortSchedule') ? document.getElementById('sortSchedule').value : 'ASC'; 
-        data.sort((a, b) => {
-            const timeA = new Date(a.startTime).getTime();
-            const timeB = new Date(b.startTime).getTime();
-            return (sortType === 'ASC') ? (timeA - timeB) : (timeB - timeA);
-        });
-     
+        function executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg) {
+            fetch('/api/schedules', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === "success") {
+                    alert(`✅ Lên lịch thành công!${repeatMsg}\n\n▶️ Bắt đầu: ${displayStart}\n⏹️ Kết thúc: ${displayEnd}${limitMsg}`);
+                    document.getElementById('schedForm').style.display = 'none';
+                    loadSchedules();
+                } else {
+                    alert("❌ Lỗi server: " + result.message);
+                }
+            })
+            .catch(err => {
+                alert("❌ Lỗi kết nối!");
+                console.error(err);
+            });
+        }
 
+        function addScheduleNew() {
+            const startY = document.getElementById('selYear').value;
+            const startM = document.getElementById('selMonth').value;
+            const startD = document.getElementById('selDate').value;
+            const startH = document.getElementById('selHour').value;
+            const startMin = document.getElementById('selMin').value;
+            const startTime = `${startY}-${startM}-${startD}T${startH}:${startMin}`;
 
-list.innerHTML = data.map(s => {
-    const sDate = new Date(s.startTime);
-    const eDate = new Date(s.endTime);
-    const now = new Date();
+            const endY = document.getElementById('selYearEnd').value;
+            const endM = document.getElementById('selMonthEnd').value;
+            const endD = document.getElementById('selDateEnd').value;
+            const endH = document.getElementById('selHourEnd').value;
+            const endMin = document.getElementById('selMinEnd').value;
+            const endTime = `${endY}-${endM}-${endD}T${endH}:${endMin}`;
 
-    // KIỂM TRA LỊCH ĐANG CHẠY
-    const isActive = (now >= sDate && now <= eDate && s.isLocked !== true && !window.globalLocked);
-    
+            const freqVal = parseFloat(document.getElementById('selFreq').value);
+            const finalMode = document.getElementById('selFinalMode').value;
+            const repeatVal = parseInt(document.getElementById('selRepeat').value);
+            const limitM3Val = parseFloat(document.getElementById('selLimitM3').value) || 0;
 
-    const cardBg = "#141414"; 
-    const cardBorder = isActive ? "3px solid #00e676" : "1px solid #333";
-    const glowEffect = isActive ? "box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);" : "";
-    const activeColor = isActive ? "#00e676" : "#b388ff"; 
+            const startObj = new Date(startTime);
+            const endObj = new Date(endTime);
+            const now = new Date(); 
 
-    const startDateStr = sDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const timeStart = sDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' });
-    const timeEnd = eDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' });
+            if (endObj.getTime() < now.getTime() - 60000) {
+                alert("❌ Lỗi: Thời gian kết thúc đã ở trong quá khứ!\nVui lòng đặt lịch cho hiện tại hoặc tương lai.");
+                return;
+            }
 
-    // 3. CHUẨN BỊ CÁC TEM 
-    const repeatTag = s.repeat == 1 
-        ? `<span style="color: #fdd835; font-size: 10px; border: 1px solid #fdd835; padding: 1px 4px; border-radius: 4px; margin-left: 5px;">↻ HÀNG NGÀY</span>` 
-        : `<span style="color: #00b0ff; font-size: 10px; border: 1px solid #00b0ff; padding: 1px 4px; border-radius: 4px; margin-left: 5px;">• MỘT LẦN</span>`;
-    
-    const limitTag = (s.limitM3 && s.limitM3 > 0) 
-        ? `<span style="color: #00e676; font-weight:bold; border:1px solid #00e676; padding:1px 4px; border-radius:4px; font-size: 11px; margin-left: 10px;">DỰ TÍNH: ${s.limitM3}m³</span>` 
-        : '';   
+            if (repeatVal === 0 && startObj.getTime() < now.getTime() - 24 * 60 * 60 * 1000) {
+                alert("❌ Lỗi: Ngày bắt đầu đã trôi qua từ hôm qua rồi sếp ơi!");
+                return;
+            }
 
-    const runningTag = isActive ? `<span style="background: #00e676; color: #000; padding: 1px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 10px;">● ĐANG CHẠY</span>` : '';
+            if (endObj <= startObj) {
+                alert("❌ Lỗi: Thời gian kết thúc phải sau thời gian bắt đầu!");
+                return;
+            }
+            if (isNaN(freqVal) || freqVal < 0 || freqVal > 50) {
+                alert("❌ Tần số phải nằm trong khoảng 0-50Hz!");
+                return;
+            }
 
-    const modeText = s.finalMode === 'MODE_AUTO' ? 'SAU KHI KẾT THÚC: AUTO' : 'SAU KHI KẾT THÚC: DỪNG';
-    const isLocked = s.isLocked === true;
-    const opacity = (isLocked || window.globalLocked) ? '0.5' : '1';
+            const data = {
+                startTime: startTime,
+                endTime: endTime,
+                freq: freqVal,
+                action: "RUN",
+                finalMode: finalMode,
+                repeat: repeatVal,
+                limitM3: limitM3Val
+            };
 
-    // TRẢ VỀ GIAO DIỆN THEO THỨ TỰ 
-    return `
-        <div class="sched-card" style="opacity: ${opacity}; background: ${cardBg}; border: ${cardBorder}; ${glowEffect} transition: 0.5s; position: relative; padding: 15px; margin-bottom: 10px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-            <div class="sched-info">
-                <div class="sched-time" style="font-size: 15px;">
-                    <span style="color: ${activeColor}">${startDateStr}</span> 
-                    <span style="color:#aaa; margin:0 5px;">|</span> 
-                    <span style="color: ${isActive ? '#00e676' : '#aa00ff'}">${timeStart} - ${timeEnd}</span>
-                    ${runningTag}
-                </div>
+            const displayStart = `${startD}/${startM} ${startH}:${startMin}`;
+            const displayEnd = `${endD}/${endM} ${endH}:${endMin}`;
+            const repeatMsg = repeatVal === 1 ? " (Lặp lại hàng ngày)" : "";
+            const limitMsg = limitM3Val > 0 ? `\n💧 Mục tiêu: ${limitM3Val} m³` : "";
+
+            fetch('/api/schedules')
+                .then(res => res.json())
+                .then(existingList => {
+                    const newStartMins = parseInt(startH) * 60 + parseInt(startMin);
+                    const newEndMins = parseInt(endH) * 60 + parseInt(endMin);
+                    const newStartMs = startObj.getTime();
+                    const newEndMs = endObj.getTime();
+
+                    const conflicts = existingList.filter(s => {
+                        const sDateObj = new Date(s.startTime);
+                        const sEndObj = new Date(s.endTime);
+                        const sStartMs = sDateObj.getTime();
+                        const sEndMs = sEndObj.getTime();
+                        const sStartMins = sDateObj.getHours() * 60 + sDateObj.getMinutes();
+                        const sEndMins = sEndObj.getHours() * 60 + sEndObj.getMinutes();
+
+                        if (s.repeat == 1 || repeatVal == 1) {
+                            return (newStartMins < sEndMins && newEndMins > sStartMins);
+                        } else {
+                            return (newStartMs < sEndMs && newEndMs > sStartMs);
+                        }
+                    });
+
+                    if (conflicts.length > 0) {
+                        let msg = `⚠️ PHÁT HIỆN TRÙNG LỊCH!\n\nLịch bạn đang đặt (${startH}:${startMin} - ${endH}:${endMin}) bị trùng với:\n`;
+                        conflicts.forEach(c => {
+                            const tStart = new Date(c.startTime).toLocaleString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+                            const tEnd = new Date(c.endTime).toLocaleString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+                            msg += `- [${tStart} - ${tEnd}]\n`;
+                        });
+                        msg += "\n❓ Bạn có muốn XÓA LỊCH CŨ để áp dụng lịch mới không?";
+
+                        if (confirm(msg)) {
+                            Promise.all(conflicts.map(c => 
+                                fetch(`/api/schedules/${c.id}`, { method: 'DELETE' })
+                            )).then(() => {
+                                executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg);
+                            });
+                        }
+                    } else {
+                        executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg);
+                    }
+                })
+                .catch(err => {
+                    console.error("Lỗi:", err);
+                    executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg);
+                });
+        }
+
+        function loadSchedules() {
+            fetch('/api/schedules').then(res => res.json()).then(data => {
+                const list = document.getElementById('scheduleList');
                 
-                <div class="sched-meta" style="margin-top: 8px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;">
-                    <span style="color:#00e676; font-weight:bold;">TẦN SỐ ${s.freq}Hz</span> 
-                    ${limitTag} 
-                    ${repeatTag}
-                    <span style="color: #aaa; font-size: 11px; margin-left: 5px;">| ${modeText}</span>
-                </div>
-            </div>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <div onclick="toggleLockSingle(${s.id}, ${!isLocked})" style="color: ${isLocked ? '#ff5252' : '#ffab00'}; cursor: pointer; font-size: 18px;">
-                    <i class="fas ${isLocked ? 'fa-lock' : 'fa-unlock'}"></i>
-                </div>
-                <div class="btn-delete" onclick="deleteSchedule(${s.id})" style="font-size: 18px; color: #d50000; cursor: pointer;"><i class="fas fa-trash"></i></div>
-            </div>
-        </div>
-    `;
-}).join('');
-    });
-}
+                if(data.length === 0) {
+                    list.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">Chưa có lịch hẹn nào.</div>';
+                    return;
+                }
+
+                const sortType = document.getElementById('sortSchedule') ? document.getElementById('sortSchedule').value : 'ASC'; 
+                data.sort((a, b) => {
+                    const timeA = new Date(a.startTime).getTime();
+                    const timeB = new Date(b.startTime).getTime();
+                    return (sortType === 'ASC') ? (timeA - timeB) : (timeB - timeA);
+                });
+            
+                list.innerHTML = data.map(s => {
+                    const sDate = new Date(s.startTime);
+                    const eDate = new Date(s.endTime);
+                    const now = new Date();
+
+                    const isActive = (now >= sDate && now <= eDate && s.isLocked !== true && !window.globalLocked);
+                    
+                    const cardBg = "#141414"; 
+                    const cardBorder = isActive ? "3px solid #00e676" : "1px solid #333";
+                    const glowEffect = isActive ? "box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);" : "";
+                    const activeColor = isActive ? "#00e676" : "#b388ff"; 
+
+                    const startDateStr = sDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const timeStart = sDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' });
+                    const timeEnd = eDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' });
+
+                    const repeatTag = s.repeat == 1 
+                        ? `<span style="color: #fdd835; font-size: 10px; border: 1px solid #fdd835; padding: 1px 4px; border-radius: 4px; margin-left: 5px;">↻ HÀNG NGÀY</span>` 
+                        : `<span style="color: #00b0ff; font-size: 10px; border: 1px solid #00b0ff; padding: 1px 4px; border-radius: 4px; margin-left: 5px;">• MỘT LẦN</span>`;
+                    
+                    const limitTag = (s.limitM3 && s.limitM3 > 0) 
+                        ? `<span style="color: #00e676; font-weight:bold; border:1px solid #00e676; padding:1px 4px; border-radius:4px; font-size: 11px; margin-left: 10px;">DỰ TÍNH: ${s.limitM3}m³</span>` 
+                        : '';   
+
+                    const runningTag = isActive ? `<span style="background: #00e676; color: #000; padding: 1px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 10px;">● ĐANG CHẠY</span>` : '';
+
+                    const modeText = s.finalMode === 'MODE_AUTO' ? 'SAU KHI KẾT THÚC: AUTO' : 'SAU KHI KẾT THÚC: DỪNG';
+                    const isLocked = s.isLocked === true;
+                    const opacity = (isLocked || window.globalLocked) ? '0.5' : '1';
+
+                    return `
+                        <div class="sched-card" style="opacity: ${opacity}; background: ${cardBg}; border: ${cardBorder}; ${glowEffect} transition: 0.5s; position: relative; padding: 15px; margin-bottom: 10px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <div class="sched-info">
+                                <div class="sched-time" style="font-size: 15px;">
+                                    <span style="color: ${activeColor}">${startDateStr}</span> 
+                                    <span style="color:#aaa; margin:0 5px;">|</span> 
+                                    <span style="color: ${isActive ? '#00e676' : '#aa00ff'}">${timeStart} - ${timeEnd}</span>
+                                    ${runningTag}
+                                </div>
+                                
+                                <div class="sched-meta" style="margin-top: 8px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;">
+                                    <span style="color:#00e676; font-weight:bold;">TẦN SỐ ${s.freq}Hz</span> 
+                                    ${limitTag} 
+                                    ${repeatTag}
+                                    <span style="color: #aaa; font-size: 11px; margin-left: 5px;">| ${modeText}</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                <div onclick="toggleLockSingle(${s.id}, ${!isLocked})" style="color: ${isLocked ? '#ff5252' : '#ffab00'}; cursor: pointer; font-size: 18px;">
+                                    <i class="fas ${isLocked ? 'fa-lock' : 'fa-unlock'}"></i>
+                                </div>
+                                <div class="btn-delete" onclick="deleteSchedule(${s.id})" style="font-size: 18px; color: #d50000; cursor: pointer;"><i class="fas fa-trash"></i></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            });
+        }
         function deleteSchedule(id) {
             if(!confirm("Bạn có chắc muốn xóa lịch này?")) return;
             fetch(`/api/schedules/${id}`, { method: 'DELETE' }).then(() => loadSchedules());
         }
 
-//  CẬP NHẬT GIAO DIỆN 
-function updateDashboard() {
-    fetch('/api/data')
-    .then(res => res.json())
-    .then(data => {
-        // Kiểm tra trạng thái kết nối
-        const sysStatus = data.system_status || 'OFFLINE'; 
-        const isSystemOnline = (sysStatus === 'ON' || sysStatus === 'ONLINE');
-        const OnLight = '#00e676';
-        const OffLight = '#d50000';
+        function updateDashboard() {
+            fetch('/api/data')
+            .then(res => res.json())
+            .then(data => {
+                const sysStatus = data.system_status || 'OFFLINE'; 
+                const isSystemOnline = (sysStatus === 'ON' || sysStatus === 'ONLINE');
+                const OnLight = '#00e676';
+                const OffLight = '#d50000';
 
-        // Cập nhật đèn báo kết nối 
-        const sysConnEl = document.getElementById('sysConnectionStatus');
-        if (sysConnEl) {
-            sysConnEl.innerText = isSystemOnline ? 'ONLINE' : 'OFFLINE';
-            sysConnEl.style.color = isSystemOnline ? OnLight : OffLight; 
+                const sysConnEl = document.getElementById('sysConnectionStatus');
+                if (sysConnEl) {
+                    sysConnEl.innerText = isSystemOnline ? 'ONLINE' : 'OFFLINE';
+                    sysConnEl.style.color = isSystemOnline ? OnLight : OffLight; 
+                }
+
+                let rawTotalM3 = parseFloat(data.total_m3 || 0);
+                displayTotalM3 = rawTotalM3; 
+                document.getElementById('totalM3Val').innerText = displayTotalM3.toFixed(3);
+
+
+                if (isSystemOnline) {
+
+                    let rawFlow = parseFloat(data.flow || 0);
+                    let rawRealFreq = parseFloat(data.real_freq || 0);
+                    let rawPressure = parseFloat(data.pressure || 0);
+                    let rawVoltage = parseFloat(data.voltage || 0);
+
+                    displayFlow = smoothData(displayFlow, rawFlow);
+                    displayRealFreq = smoothData(displayRealFreq, rawRealFreq);
+                    displayPressure = smoothData(displayPressure, rawPressure);
+                    displayVoltage = smoothData(displayVoltage, rawVoltage);
+
+                    document.getElementById('flowVal').innerText = displayFlow.toFixed(1);
+                    document.getElementById('realFreq').innerText = displayRealFreq.toFixed(0);
+                    document.getElementById('pressureVal').innerText = displayPressure.toFixed(1);
+                    document.getElementById('voltageVal').innerText = displayVoltage.toFixed(1);
+                    document.getElementById('setFreq').innerText = data.set_freq || 0;
+
+                    const isRunningState = (data.status === 'ON');
+                    const runStatusEl = document.getElementById('runStatus');
+                    runStatusEl.innerText = isRunningState ? 'ĐANG CHẠY' : 'DỪNG';
+                    runStatusEl.style.color = isRunningState ? 'var(--accent-green)' : 'var(--accent-red)';
+                    document.getElementById('modeStatus').innerText = (data.mode === 'MODE_AUTO' || data.mode === 'AUTO') ? 'TỰ ĐỘNG' : 'THỦ CÔNG';
+
+                    const isActuallyPumping = isRunningState && (displayRealFreq > 0.5); 
+
+                    const sensorBox = document.getElementById('sensor-cp-box');
+                    if (sensorBox) {
+                        if (displayPressure < 0) {
+                            sensorBox.setAttribute('fill', '#d50000'); 
+                        } else if (displayPressure > 0.5) {
+                            sensorBox.setAttribute('fill', OnLight); 
+                            sensorBox.setAttribute('stroke', OnLight);
+                        } else {
+                            sensorBox.setAttribute('fill', '#ddd'); 
+                            sensorBox.setAttribute('stroke', '#555');
+                        }
+                    }
+
+                    const inverterBody = document.getElementById('inverter-case-body');
+                    if (inverterBody) {
+                        if (displayRealFreq > 0.5) {
+                            inverterBody.setAttribute('stroke', 'var(--accent-green)'); 
+                            inverterBody.setAttribute('stroke-width', '4'); 
+                        } else {
+                            inverterBody.setAttribute('stroke', '#111'); 
+                            inverterBody.setAttribute('stroke-width', '2');
+                        }
+                    }
+
+                    const tankWater = document.getElementById('tank-water');
+                    if (tankWater) {
+                        if (isActuallyPumping) tankWater.classList.add('water-rising');
+                        else tankWater.classList.remove('water-rising');
+                    }
+
+                    const pumpGroup = document.getElementById('pump-inner-group');
+                    const pumpBody = document.getElementById('complex-pump-body');
+                    const pumpRibs = document.querySelectorAll('.pump-rib');
+
+                    if (isActuallyPumping) {
+                        if(pumpGroup) pumpGroup.classList.add('pump-running-effect');
+                        if(pumpBody) {
+                            pumpBody.setAttribute('fill', 'url(#pumpGradRun)');
+                            pumpBody.setAttribute('stroke', OnLight);
+                        }
+                        pumpRibs.forEach(rib => rib.setAttribute('stroke', OnLight));
+                    } else {
+                        if(pumpGroup) pumpGroup.classList.remove('pump-running-effect');
+                        if(pumpBody) {
+                            pumpBody.setAttribute('fill', 'url(#pumpGradStop)');
+                            pumpBody.setAttribute('stroke', OffLight);
+                        }
+                        pumpRibs.forEach(rib => rib.setAttribute('stroke', '#b71c1c'));
+                    }
+
+                    const pipeEl = document.getElementById('svg-pipe');
+                    if(pipeEl) {
+                        if (isActuallyPumping) {
+                            pipeEl.setAttribute('stroke', 'none'); 
+                            pipeEl.classList.add('water-flow');
+                        } else {
+                            pipeEl.setAttribute('stroke', 'url(#pipeGradStatic)');
+                            pipeEl.classList.remove('water-flow');
+                        }
+                    }
+
+                } else {
+                    document.getElementById('flowVal').innerText = "--";
+                    document.getElementById('realFreq').innerText = "--";
+                    document.getElementById('pressureVal').innerText = "--";
+                    document.getElementById('voltageVal').innerText = "--";
+                    
+                    const runStatusEl = document.getElementById('runStatus');
+                    runStatusEl.innerText = 'MẤT TÍN HIỆU';
+                    runStatusEl.style.color = '#777'; 
+                    
+                    const tankWater = document.getElementById('tank-water');
+                    if (tankWater) tankWater.classList.remove('water-rising');
+
+                    const pumpGroup = document.getElementById('pump-inner-group');
+                    if(pumpGroup) pumpGroup.classList.remove('pump-running-effect');
+                    
+                    const pipeEl = document.getElementById('svg-pipe');
+                    if(pipeEl) {
+                        pipeEl.setAttribute('stroke', 'url(#pipeGradStatic)');
+                        pipeEl.classList.remove('water-flow');
+                    }
+                    const pumpBody = document.getElementById('complex-pump-body');
+                    const pumpRibs = document.querySelectorAll('.pump-rib');
+                    if(pumpBody) {
+                        pumpBody.setAttribute('fill', 'url(#pumpGradStop)');
+                        pumpBody.setAttribute('stroke', OffLight);
+                    }
+                    pumpRibs.forEach(rib => rib.setAttribute('stroke', '#b71c1c'));
+                }
+            })
+            .catch(err => {
+                const sysConnEl = document.getElementById('sysConnectionStatus');
+                if (sysConnEl) {
+                    sysConnEl.innerText = 'OFFLINE'; 
+                    sysConnEl.style.color = '#d50000'; 
+                }
+                
+                document.getElementById('flowVal').innerText = "--";
+                document.getElementById('realFreq').innerText = "--";
+                document.getElementById('pressureVal').innerText = "--";
+                document.getElementById('voltageVal').innerText = "--";
+                document.getElementById('runStatus').innerText = 'MẤT KẾT NỐI';
+                document.getElementById('runStatus').style.color = '#777';
+            });
         }
 
-        // TỔNG LƯU LƯỢNG 
-        let rawTotalM3 = parseFloat(data.total_m3 || 0);
-        displayTotalM3 = rawTotalM3; 
-        document.getElementById('totalM3Val').innerText = displayTotalM3.toFixed(3);
-
-
-        //  XỬ LÝ SỐ LIỆU THỜI GIAN THỰC
-        if (isSystemOnline) {
-
-            // Lấy dữ liệu thô
-            let rawFlow = parseFloat(data.flow || 0);
-            let rawRealFreq = parseFloat(data.real_freq || 0);
-            let rawPressure = parseFloat(data.pressure || 0);
-            let rawVoltage = parseFloat(data.voltage || 0);
-
-            displayFlow = smoothData(displayFlow, rawFlow);
-            displayRealFreq = smoothData(displayRealFreq, rawRealFreq);
-            displayPressure = smoothData(displayPressure, rawPressure);
-            displayVoltage = smoothData(displayVoltage, rawVoltage);
-
-            // Hiển thị số liệu thực
-            document.getElementById('flowVal').innerText = displayFlow.toFixed(1);
-            document.getElementById('realFreq').innerText = displayRealFreq.toFixed(0);
-            document.getElementById('pressureVal').innerText = displayPressure.toFixed(1);
-            document.getElementById('voltageVal').innerText = displayVoltage.toFixed(1);
-            document.getElementById('setFreq').innerText = data.set_freq || 0;
-
-            // Xử lý trạng thái chạy/dừng
-            const isRunningState = (data.status === 'ON');
-            const runStatusEl = document.getElementById('runStatus');
-            runStatusEl.innerText = isRunningState ? 'ĐANG CHẠY' : 'DỪNG';
-            runStatusEl.style.color = isRunningState ? 'var(--accent-green)' : 'var(--accent-red)';
-            document.getElementById('modeStatus').innerText = (data.mode === 'MODE_AUTO' || data.mode === 'AUTO') ? 'TỰ ĐỘNG' : 'THỦ CÔNG';
-
-            // XỬ LÝ HIỆU ỨNG HÌNH ẢNH 
-            const isActuallyPumping = isRunningState && (displayRealFreq > 0.5); 
-
-            // 1. SVG Cảm biến
-            const sensorBox = document.getElementById('sensor-cp-box');
-            if (sensorBox) {
-                if (displayPressure < 0) {
-                    sensorBox.setAttribute('fill', '#d50000'); 
-                } else if (displayPressure > 0.5) {
-                    sensorBox.setAttribute('fill', OnLight); 
-                    sensorBox.setAttribute('stroke', OnLight);
-                } else {
-                    sensorBox.setAttribute('fill', '#ddd'); 
-                    sensorBox.setAttribute('stroke', '#555');
-                }
-            }
-
-            // 2. SVG Biến tần
-            const inverterBody = document.getElementById('inverter-case-body');
-            if (inverterBody) {
-                if (displayRealFreq > 0.5) {
-                    inverterBody.setAttribute('stroke', 'var(--accent-green)'); 
-                    inverterBody.setAttribute('stroke-width', '4'); 
-                } else {
-                    inverterBody.setAttribute('stroke', '#111'); 
-                    inverterBody.setAttribute('stroke-width', '2');
-                }
-            }
-
-            // Hiệu ứng nước trong bể
-            const tankWater = document.getElementById('tank-water');
-            if (tankWater) {
-                if (isActuallyPumping) tankWater.classList.add('water-rising');
-                else tankWater.classList.remove('water-rising');
-            }
-
-            // Hiệu ứng Bơm rung và đổi màu
-            const pumpGroup = document.getElementById('pump-inner-group');
-            const pumpBody = document.getElementById('complex-pump-body');
-            const pumpRibs = document.querySelectorAll('.pump-rib');
-
-            if (isActuallyPumping) {
-                if(pumpGroup) pumpGroup.classList.add('pump-running-effect');
-                if(pumpBody) {
-                    pumpBody.setAttribute('fill', 'url(#pumpGradRun)');
-                    pumpBody.setAttribute('stroke', OnLight);
-                }
-                pumpRibs.forEach(rib => rib.setAttribute('stroke', OnLight));
-            } else {
-                if(pumpGroup) pumpGroup.classList.remove('pump-running-effect');
-                if(pumpBody) {
-                    pumpBody.setAttribute('fill', 'url(#pumpGradStop)');
-                    pumpBody.setAttribute('stroke', OffLight);
-                }
-                pumpRibs.forEach(rib => rib.setAttribute('stroke', '#b71c1c'));
-            }
-
-            // Hiệu ứng Nước chảy trong ống
-            const pipeEl = document.getElementById('svg-pipe');
-            if(pipeEl) {
-                if (isActuallyPumping) {
-                    pipeEl.setAttribute('stroke', 'none'); 
-                    pipeEl.classList.add('water-flow');
-                } else {
-                    pipeEl.setAttribute('stroke', 'url(#pipeGradStatic)');
-                    pipeEl.classList.remove('water-flow');
-                }
-            }
-
-        } else {
-            // KHI OF THÌ ĐƯA CHỈ SỐ VỀ --
-            
-        
-            document.getElementById('flowVal').innerText = "--";
-            document.getElementById('realFreq').innerText = "--";
-            document.getElementById('pressureVal').innerText = "--";
-            document.getElementById('voltageVal').innerText = "--";
-            
-        
-            const runStatusEl = document.getElementById('runStatus');
-            runStatusEl.innerText = 'MẤT TÍN HIỆU';
-            runStatusEl.style.color = '#777'; 
-            
-
-            const tankWater = document.getElementById('tank-water');
-            if (tankWater) tankWater.classList.remove('water-rising');
-
-            const pumpGroup = document.getElementById('pump-inner-group');
-            if(pumpGroup) pumpGroup.classList.remove('pump-running-effect');
-            
-    
-            const pipeEl = document.getElementById('svg-pipe');
-            if(pipeEl) {
-                pipeEl.setAttribute('stroke', 'url(#pipeGradStatic)');
-                pipeEl.classList.remove('water-flow');
-            }
-            const pumpBody = document.getElementById('complex-pump-body');
-            const pumpRibs = document.querySelectorAll('.pump-rib');
-            if(pumpBody) {
-                pumpBody.setAttribute('fill', 'url(#pumpGradStop)');
-                pumpBody.setAttribute('stroke', OffLight);
-            }
-            pumpRibs.forEach(rib => rib.setAttribute('stroke', '#b71c1c'));
-        }
-    })
-    .catch(err => {
-        // TRƯỜNG HỢP LỖI MẠNG CLIENT/SERVER SẬP 
-        const sysConnEl = document.getElementById('sysConnectionStatus');
-        if (sysConnEl) {
-            sysConnEl.innerText = 'OFFLINE'; 
-            sysConnEl.style.color = '#d50000'; 
-        }
-        
-        // giữ Tổng lưu lượng cũ 
-        document.getElementById('flowVal').innerText = "--";
-        document.getElementById('realFreq').innerText = "--";
-        document.getElementById('pressureVal').innerText = "--";
-        document.getElementById('voltageVal').innerText = "--";
-        document.getElementById('runStatus').innerText = 'MẤT KẾT NỐI';
-        document.getElementById('runStatus').style.color = '#777';
-    });
-}
-
-        // LOGIC CHART.JS VÀ LỊCH SỬ GOOGLE SHEETS
-        //  URL Google Sheet 
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz7FfMnGmtgBlBcAgFWGW4MEDSIs7i8iSCuzHCwI0_m7kDjYxw0xnT7US9e9HiT_3-X/exec";
         
         let isViewingHistory = false; 
@@ -1642,124 +1565,117 @@ function updateDashboard() {
             gradPress.addColorStop(0, 'rgba(0, 176, 255, 0.5)'); 
             gradPress.addColorStop(1, 'rgba(0, 176, 255, 0)');
 
-          // --- CHART ÁP SUẤT ---
-pressureChart = new Chart(ctxP, {
-    type: 'line',
-    data: {
-        labels: [],
-        datasets: [{
-            label: 'Áp suất',
-            data: [],
-            borderColor: '#00b0ff',
-            backgroundColor: gradPress,
-            fill: true
-        }]
-    },
-    options: {
-        ...commonOptions, 
-        scales: {
-            ...commonOptions.scales,
-            y: {
-                min: 0, 
-                max: 5, 
-                ticks: { 
-                    color: '#00b0ff',
-                    font: { weight: 'bold' },
-                    callback: function(value) { return value + ' Bar'; } 
+            pressureChart = new Chart(ctxP, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Áp suất',
+                        data: [],
+                        borderColor: '#00b0ff',
+                        backgroundColor: gradPress,
+                        fill: true
+                    }]
                 },
-                grid: { color: '#333' }
-            }
-        },
-        plugins: {
-            ...commonOptions.plugins,
-            //  Cấu hình Zoom/Pan 
-            zoom: {
-                pan: {
-                    enabled: true,
-                    mode: 'x', 
-                    threshold: 10
-                },
-                zoom: {
-                    wheel: { enabled: true },
-                    pinch: { enabled: true },
-                    mode: 'x',
-                }
-            },
-            // -----------------------------------------------------
-            tooltip: {
-                ...commonOptions.plugins.tooltip,
-                callbacks: {
-                    label: function(context) {
-                        return context.parsed.y + ' Bar'; 
+                options: {
+                    ...commonOptions, 
+                    scales: {
+                        ...commonOptions.scales,
+                        y: {
+                            min: 0, 
+                            max: 5, 
+                            ticks: { 
+                                color: '#00b0ff',
+                                font: { weight: 'bold' },
+                                callback: function(value) { return value + ' Bar'; } 
+                            },
+                            grid: { color: '#333' }
+                        }
+                    },
+                    plugins: {
+                        ...commonOptions.plugins,
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x', 
+                                threshold: 10
+                            },
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x',
+                            }
+                        },
+                        tooltip: {
+                            ...commonOptions.plugins.tooltip,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' Bar'; 
+                                }
+                            }
+                        }
                     }
                 }
-            }
-        }
-    }
-});
+            });
 
-// CHART TẦN SỐ 
-const ctxF = document.getElementById('freqChart').getContext('2d');
-let gradFreq = ctxF.createLinearGradient(0, 0, 0, 300);
-gradFreq.addColorStop(0, 'rgba(0, 230, 118, 0.5)'); 
-gradFreq.addColorStop(1, 'rgba(0, 230, 118, 0)');
+            const ctxF = document.getElementById('freqChart').getContext('2d');
+            let gradFreq = ctxF.createLinearGradient(0, 0, 0, 300);
+            gradFreq.addColorStop(0, 'rgba(0, 230, 118, 0.5)'); 
+            gradFreq.addColorStop(1, 'rgba(0, 230, 118, 0)');
 
-freqChart = new Chart(ctxF, {
-    type: 'line',
-    data: {
-        labels: [],
-        datasets: [{
-            label: 'Tần số',
-            data: [],
-            borderColor: '#00e676',
-            backgroundColor: gradFreq,
-            fill: true
-        }]
-    },
-    options: {
-        ...commonOptions,
-        scales: {
-            ...commonOptions.scales,
-            y: {
-                min: 0, 
-                max: 50,
-                ticks: { 
-                    color: '#00e676',
-                    font: { weight: 'bold' },
-                    callback: function(value) { return value + ' Hz'; }
+            freqChart = new Chart(ctxF, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Tần số',
+                        data: [],
+                        borderColor: '#00e676',
+                        backgroundColor: gradFreq,
+                        fill: true
+                    }]
                 },
-                grid: { color: '#333' }
-            }
-        },
-        plugins: {
-            ...commonOptions.plugins,
-            // Cấu hình Zoom/Pan cho Tần số
-            zoom: {
-                pan: {
-                    enabled: true,
-                    mode: 'x', 
-                    threshold: 10
-                },
-                zoom: {
-                    wheel: { enabled: true },
-                    pinch: { enabled: true },
-                    mode: 'x',
-                }
-            },
-            // -----------------------------------------------------
-            tooltip: {
-                ...commonOptions.plugins.tooltip,
-                callbacks: {
-                    label: function(context) {
-                        return context.parsed.y + ' Hz'; 
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        ...commonOptions.scales,
+                        y: {
+                            min: 0, 
+                            max: 50,
+                            ticks: { 
+                                color: '#00e676',
+                                font: { weight: 'bold' },
+                                callback: function(value) { return value + ' Hz'; }
+                            },
+                            grid: { color: '#333' }
+                        }
+                    },
+                    plugins: {
+                        ...commonOptions.plugins,
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x', 
+                                threshold: 10
+                            },
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x',
+                            }
+                        },
+                        tooltip: {
+                            ...commonOptions.plugins.tooltip,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' Hz'; 
+                                }
+                            }
+                        }
                     }
                 }
-            }
-        }
-    }
-});
+            });
 
-            // biểu đồ cột lưu lượng
             const ctxH = document.getElementById('hourlyChart').getContext('2d');
             let gradBar = ctxH.createLinearGradient(0, 0, 0, 300);
             gradBar.addColorStop(0, '#00e5ff');
@@ -1824,10 +1740,9 @@ freqChart = new Chart(ctxF, {
             });
         }
 
-        // HÀM LẤY DỮ LIỆU LỊCH SỬ TỪ GOOGLE SHEET 
       function fetchHistoryData() {
             const datePicker = document.getElementById('historyDateInput');
-            const dateVal = datePicker.value; // Dạng yyyy-mm-dd
+            const dateVal = datePicker.value;
             
             if (!dateVal) {
                 alert("Vui lòng chọn ngày trước!");
@@ -1838,9 +1753,8 @@ freqChart = new Chart(ctxF, {
             const oldText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...';
             
-            // Gọi sang URL Google Sheet 
             fetch(`${GAS_API_URL}?action=getHistory&date=${dateVal}`)
-            .then(response => response.json())
+            .then(response => response.json()) 
             .then(data => {
                 if (!data || data.length === 0) {
                     alert(`Không có dữ liệu cho ngày ${dateVal}`);
@@ -1862,16 +1776,13 @@ freqChart = new Chart(ctxF, {
         }
 
         function updateChartsWithHistory(data) {
-            // Chuyển sang chế độ xem lịch sử
             isViewingHistory = true;
 
-            // Trích xuất các mảng dữ liệu từ kết quả JSON trả về
             const labels = data.map(d => d.time);
             const pressData = data.map(d => d.pressure);
             const freqData = data.map(d => d.freq);
             const flowData = data.map(d => d.flow); 
 
-            //  Cập nhật Biểu đồ Áp suất
             if (pressureChart) {
                 pressureChart.data.labels = labels;
                 pressureChart.data.datasets[0].data = pressData;
@@ -1879,7 +1790,6 @@ freqChart = new Chart(ctxF, {
                 pressureChart.update();
             }
             
-            //  Cập nhật Biểu đồ Tần số
             if (freqChart) {
                 freqChart.data.labels = labels;
                 freqChart.data.datasets[0].data = freqData;
@@ -1887,7 +1797,6 @@ freqChart = new Chart(ctxF, {
                 freqChart.update();
             }
 
-            //  Cập nhật Biểu đồ Lưu lượng 
             if (window.hourlyChart) {
              
                 window.hourlyChart.data.labels = labels; 
@@ -1906,12 +1815,10 @@ freqChart = new Chart(ctxF, {
             window.location.reload(); 
         }
 
-        // HÀM CẬP NHẬT CHART 
        function updateChart() {
       
             if (isViewingHistory || !document.getElementById('chart-tab').classList.contains('active')) return;
 
-            // Cập nhật 2 biểu đồ áp suất và tần số
             fetch('/api/history')
                 .then(res => res.json())
                 .then(data => {
@@ -1921,17 +1828,16 @@ freqChart = new Chart(ctxF, {
                     
                     pressureChart.data.labels = labels;
                     pressureChart.data.datasets[0].data = data.map(d => d.pressure);
-                    pressureChart.data.datasets[0].label = "Áp suất"; // Reset lại label
+                    pressureChart.data.datasets[0].label = "Áp suất";
                     pressureChart.update('none'); 
 
                     freqChart.data.labels = labels;
                     freqChart.data.datasets[0].data = data.map(d => d.real_freq);
-                    freqChart.data.datasets[0].label = "Tần số"; // Reset lại label
+                    freqChart.data.datasets[0].label = "Tần số";
                     freqChart.update('none');
                 })
                 .catch(err => console.log("Lỗi lấy dữ liệu history:", err));
 
-            // Cập nhật biểu đồ Cột 
             fetch('/api/daily-usage')
                 .then(res => res.json())
                 .then(data => {
@@ -1943,206 +1849,254 @@ freqChart = new Chart(ctxF, {
                 .catch(err => console.log("Lỗi lấy dữ liệu daily-usage:", err));
         }
 
-        // KHỞI CHẠY TẤT CẢ
         initChart();
         setInterval(updateChart, 1500); 
         setInterval(updateDashboard, 1500); 
         updateDashboard();
 
-        // LOGIC CHAT BOT TRÊN WEB
-function toggleChatWindow() {
-    const win = document.getElementById('chatWindow');
-    const badge = document.getElementById('chatBadge');
-    
-    win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
-    
-  
-    if (win.style.display === 'flex') {
-        badge.style.display = 'none';
-        badge.innerText = '0';
-        setTimeout(() => document.getElementById('chatInput').focus(), 100);
-    }
-}
+        let isChatHistoryLoaded = false;
 
-function handleChatEnter(e) {
-    if (e.key === 'Enter') sendChatMsg();
-}
+        function loadChatHistory() {
+            if (isChatHistoryLoaded) return; 
+            isChatHistoryLoaded = true;
 
-function sendChatMsg(txt = null) {
-    const input = document.getElementById('chatInput');
-    const msg = txt || input.value.trim();
-    if (!msg) return;
+            fetch('/api/chat-history')
+                .then(res => res.json())
+                .then(data => {
+                    const body = document.getElementById('chatBody');
+                    
+                    let historyHTML = '';
+                    
+                    if (data && data.length > 0) {
+                        data.forEach(msg => {
+                            let msgClass = "msg-bot";
+                            let msgStyle = "";
+                            let content = msg.text;
 
-    //  Hiển thị tin nhắn của người dùng
-    const body = document.getElementById('chatBody');
-    body.innerHTML += `<div class="msg-bubble msg-user">${msg}</div>`;
-    input.value = '';
+                            if (msg.role === 'user') {
+                                if (content.includes('<b>🙉 Admin:</b>')) {
+                                    msgClass = "msg-user"; 
+                                    msgStyle = "align-self: flex-start; border-bottom-left-radius: 2px; border-bottom-right-radius: 10px; background: var(--accent-blue); color: white;";
+                                } else {
+                                    msgClass = "msg-user";
+                                }
+                            } else if (msg.role === 'alert') {
+                                msgClass = "msg-bot";
+                                msgStyle = "border-left: 4px solid var(--accent-red); background: #2c1a1a;";
+                            } else if (msg.role === 'report') {
+                                msgClass = "msg-bot";
+                                msgStyle = "border-left: 4px solid var(--accent-green);";
+                            }
+                            historyHTML += `<div class="msg-bubble ${msgClass}" style="${msgStyle}">${content}</div>`;
+                        });
+                    }
 
-    const sugg = document.getElementById('chatSuggestions');
-    if(sugg) sugg.style.display = 'none';
+                    let greetingHTML = `<div class="msg-bubble msg-bot">Chào sếp! em có thể giúp sếp xem thông tin trạm bơm 😃</div>`;
 
+                    let chipsHTML = `
+                        <div id="chatSuggestions" class="suggestion-chips">
+                            <div class="chip" onclick="sendChatMsg('Thông tinh sinh viên')">Thông tin Sinh viên</div>
+                            <div class="chip" onclick="sendChatMsg('Kiểm tra')">Kiểm tra tất cả</div>
+                            <div class="chip" onclick="sendChatMsg('Áp suất')">Áp suất</div>
+                            <div class="chip" onclick="sendChatMsg('Lưu lượng')">Lưu lượng</div>
+                            <div class="chip" onclick="sendChatMsg('Tần số')">Tần số</div>
+                            <div class="chip" onclick="sendChatMsg('Lịch trình')">Lịch trình</div>
+                            <div class="chip" onclick="sendChatMsg('Điện áp')">Điện áp</div>
+                            <div class="chip" onclick="sendChatMsg('Trạng thái')">Trạng thái</div>
+                            <div class="chip" onclick="sendChatMsg('Ngày tháng năm')">ngày tháng năm</div>
+                            <div class="chip" onclick="sendChatMsg('Báo cáo hôm qua')">Báo cáo hôm qua</div>
+                        </div>`;
 
-    body.scrollTop = body.scrollHeight;
-
-    // Gửi API lên Server
-    fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg })
-    })
-    .then(res => res.json())
-    .then(data => {
-        // Hiển thị phản hồi từ Bot
-        setTimeout(() => {
-            body.innerHTML += `<div class="msg-bubble msg-bot">${data.reply}</div>`;
-            body.scrollTop = body.scrollHeight;
-        }, 300);
-    })
-    .catch(err => {
-        console.error("Chat Error:", err);
-        body.innerHTML += `<div class="msg-bubble msg-bot" style="color: #d50000;">Lỗi kết nối Server!</div>`;
-    });
-}
-// TỰ ĐỘNG CẬP NHẬT CẢNH BÁO VÀO CHATBOT
-function pollSystemNotifications() {
-    fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: "__CHECK_NOTIFICATIONS__" })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.notifications && data.notifications.length > 0) {
-            const body = document.getElementById('chatBody');
-            const chatWin = document.getElementById('chatWindow');
-            const chatBtn = document.querySelector('.chat-btn-floating');
-            const badge = document.getElementById('chatBadge');
-
-           data.notifications.forEach(msg => {
-                let finalMsg = msg;
-                let customStyle = "";
-                let customClass = "msg-bot"; 
-
-                // 1Kiểm tra nếu là tin nhắn từ CMD 
-                if (msg.startsWith("[ADMIN_MSG]")) {
-                    finalMsg = "<b>🙉 Admin:</b> " + msg.replace("[ADMIN_MSG]", "");
-                    customClass = "msg-user"; // Class này có màu xanh dương
-                    // Thêm style để nằm bên trái và bo góc cho đẹp
-                    customStyle = "align-self: flex-start; border-bottom-left-radius: 2px; border-bottom-right-radius: 10px; background: var(--accent-blue); color: white;";
-                } 
-                //  Nếu là tin nhắn cảnh báo hệ thống (🚨 THÔNG BÁO)
-                else {
-                    customStyle = "border-left: 4px solid var(--accent-red); background: #2c1a1a;";
-                }
-
-                body.innerHTML += `
-                    <div class="msg-bubble ${customClass}" style="${customStyle}">
-                        ${finalMsg}
-                    </div>`;
-                
-                // Logic thông báo chấm đỏ và âm thanh -
-                if (chatWin.style.display !== 'flex') {
-                    let currentCount = parseInt(badge.innerText);
-                    badge.innerText = currentCount + 1;
-                    badge.style.display = 'block';
-                    let audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'); 
-                    audio.play();
-                    chatBtn.style.animation = "pumpShake 0.1s 5"; 
-                }
-            }); 
-
-            body.scrollTop = body.scrollHeight;
+                    body.innerHTML = historyHTML + greetingHTML + chipsHTML;
+                    
+                    body.scrollTop = body.scrollHeight;
+                })
+                .catch(err => {
+                    console.error("Lỗi tải lịch sử chat:", err);
+                    isChatHistoryLoaded = false;
+                });
         }
-    }) 
-    .catch(err => console.error("Lỗi lấy cảnh báo:", err)); 
-}
+        function toggleChatWindow() {
+            const win = document.getElementById('chatWindow');
+            const badge = document.getElementById('chatBadge');
+            
+            const isOpening = (win.style.display !== 'flex');
+            win.style.display = isOpening ? 'flex' : 'none';
+            
+            if (isOpening) {
+                badge.style.display = 'none';
+                badge.innerText = '0';
+                
+                loadChatHistory(); 
+
+                setTimeout(() => document.getElementById('chatInput').focus(), 100);
+            }
+        }
+
+        function handleChatEnter(e) {
+            if (e.key === 'Enter') sendChatMsg();
+        }
+
+        function sendChatMsg(txt = null) {
+            const input = document.getElementById('chatInput');
+            const msg = txt || input.value.trim();
+            if (!msg) return;
+
+            const body = document.getElementById('chatBody');
+
+            const sugg = document.getElementById('chatSuggestions');
+            if(sugg) sugg.style.display = 'none';
+
+            body.innerHTML += `<div class="msg-bubble msg-user">${msg}</div>`;
+            input.value = '';
+
+            body.scrollTop = body.scrollHeight;
+
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg })
+            })
+            .then(res => res.json())
+            .then(data => {
+                setTimeout(() => {
+                    body.innerHTML += `<div class="msg-bubble msg-bot">${data.reply}</div>`;
+                    body.scrollTop = body.scrollHeight;
+                }, 300);
+            })
+            .catch(err => {
+                console.error("Chat Error:", err);
+                body.innerHTML += `<div class="msg-bubble msg-bot" style="color: #d50000;">Lỗi kết nối Server!</div>`;
+            });
+        }
+
+        function pollSystemNotifications() {
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: "__CHECK_NOTIFICATIONS__" })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.notifications && data.notifications.length > 0) {
+                    const body = document.getElementById('chatBody');
+                    const chatWin = document.getElementById('chatWindow');
+                    const chatBtn = document.querySelector('.chat-btn-floating');
+                    const badge = document.getElementById('chatBadge');
+            
+                    const sugg = document.getElementById('chatSuggestions');
+                
+                data.notifications.forEach(msg => {
+                        let finalMsg = msg;
+                        let customStyle = "";
+                        let customClass = "msg-bot"; 
+
+                        if (msg.startsWith("[ADMIN_MSG]")) {
+                            finalMsg = "<b>🙉 Admin:</b> " + msg.replace("[ADMIN_MSG]", "");
+                            customClass = "msg-user"; 
+                        
+                            customStyle = "align-self: flex-start; border-bottom-left-radius: 2px; border-bottom-right-radius: 10px; background: var(--accent-blue); color: white;";
+                        } 
+                        else {
+                            customStyle = "border-left: 4px solid var(--accent-red); background: #2c1a1a;";
+                        }
+                        
+                
+                        body.innerHTML += `
+                            <div class="msg-bubble ${customClass}" style="${customStyle}">
+                                ${finalMsg}
+                            </div>`;
+                        
+                        if (chatWin.style.display !== 'flex') {
+                            let currentCount = parseInt(badge.innerText);
+                            badge.innerText = currentCount + 1;
+                            badge.style.display = 'block';
+                            let audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'); 
+                            audio.play();
+                            chatBtn.style.animation = "pumpShake 0.1s 5"; 
+                        }
+                    }); 
+
+                    body.scrollTop = body.scrollHeight;
+                }
+            }) 
+            .catch(err => console.error("Lỗi lấy cảnh báo:", err)); 
+        }
+
+        setInterval(pollSystemNotifications, 1000);
+
+        function checkLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const errorMsg = document.getElementById('loginError');
 
 
-setInterval(pollSystemNotifications, 1000);
+            if (user === 'admin' && pass === '12345') {
+                document.getElementById('loginOverlay').style.display = 'none';
+                sessionStorage.setItem('isLoggedIn', 'true');
+            } else {
+                errorMsg.style.display = 'block';
+                const box = document.querySelector('#loginOverlay div');
+                box.style.animation = 'pumpShake 0.1s 3';
+                setTimeout(() => box.style.animation = '', 300);
+            }
+        }
 
-function checkLogin() {
-    const user = document.getElementById('username').value;
-    const pass = document.getElementById('password').value;
-    const errorMsg = document.getElementById('loginError');
+        window.onload = function() {
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                document.getElementById('loginOverlay').style.display = 'none';
+            }
 
+            const dateInput = document.getElementById('historyDateInput');
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            dateInput.value = `${year}-${month}-${day}`;
+        };
 
-    if (user === 'admin' && pass === '12345') {
-        // Ẩn khung đăng nhập
-        document.getElementById('loginOverlay').style.display = 'none';
-        sessionStorage.setItem('isLoggedIn', 'true');
-    } else {
-        errorMsg.style.display = 'block';
-        const box = document.querySelector('#loginOverlay div');
-        box.style.animation = 'pumpShake 0.1s 3';
-        setTimeout(() => box.style.animation = '', 300);
-    }
-}
+        const togglePassword = document.querySelector('#togglePassword');
+        const passwordInput = document.querySelector('#password');
 
+        togglePassword.addEventListener('click', function (e) {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye-slash');
+            this.style.color = type === 'text' ? 'var(--accent-blue)' : '#777';
+        });
 
-window.onload = function() {
-    if (sessionStorage.getItem('isLoggedIn') === 'true') {
-        document.getElementById('loginOverlay').style.display = 'none';
-    }
+        const sliders = document.querySelectorAll('.drag-scroll');
+        sliders.forEach(slider => {
+            let isDown = false;
+            let startX;
+            let scrollLeft;
 
-    //  Tự động set ngày hôm nay khi load trang
-    const dateInput = document.getElementById('historyDateInput');
-    const now = new Date();
-    // Lấy ngày tháng năm theo múi giờ VN
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    dateInput.value = `${year}-${month}-${day}`;
-};
+            slider.addEventListener('mousedown', (e) => {
+                isDown = true;
+                slider.classList.add('active'); 
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            });
+            
+            slider.addEventListener('mouseleave', () => {
+                isDown = false;
+                slider.classList.remove('active');
+            });
+            
+            slider.addEventListener('mouseup', () => {
+                isDown = false;
+                slider.classList.remove('active');
+            });
+            
+            slider.addEventListener('mousemove', (e) => {
+                if(!isDown) return;
+                e.preventDefault(); 
+                const x = e.pageX - slider.offsetLeft;
+                const walk = (x - startX) * 2; 
+                slider.scrollLeft = scrollLeft - walk;
+            });
+        });
 
-const togglePassword = document.querySelector('#togglePassword');
-const passwordInput = document.querySelector('#password');
-
-togglePassword.addEventListener('click', function (e) {
- 
-    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-    passwordInput.setAttribute('type', type);
-    
-    
-    this.classList.toggle('fa-eye-slash');
-    
-   
-    this.style.color = type === 'text' ? 'var(--accent-blue)' : '#777';
-});
-
-// [MỚI] XỬ LÝ KÉO THẢ NGANG 
-const sliders = document.querySelectorAll('.drag-scroll');
-sliders.forEach(slider => {
-    let isDown = false;
-    let startX;
-    let scrollLeft;
-
-    slider.addEventListener('mousedown', (e) => {
-        isDown = true;
-        slider.classList.add('active'); 
-        startX = e.pageX - slider.offsetLeft;
-        scrollLeft = slider.scrollLeft;
-    });
-    
-    slider.addEventListener('mouseleave', () => {
-        isDown = false;
-        slider.classList.remove('active');
-    });
-    
-    slider.addEventListener('mouseup', () => {
-        isDown = false;
-        slider.classList.remove('active');
-    });
-    
-    slider.addEventListener('mousemove', (e) => {
-        if(!isDown) return;
-        e.preventDefault(); 
-        const x = e.pageX - slider.offsetLeft;
-        const walk = (x - startX) * 2; 
-        slider.scrollLeft = scrollLeft - walk;
-    });
-});
-
-        // LOGIC KHÓA LỊCH 
         window.globalLocked = false;
 
         async function toggleLockAll() {
@@ -2181,7 +2135,6 @@ sliders.forEach(slider => {
             loadSchedules();
         }
 
-        // Kiểm tra trạng thái khóa khi tải trang
         fetch('/api/schedules-status')
             .then(res => res.json())
             .then(data => {
