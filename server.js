@@ -1,7 +1,7 @@
 const express = require('express');
 const mqtt = require('mqtt');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs'); 
 const TelegramBot = require('node-telegram-bot-api');
 
 const GAS_APP_URL = "https://script.google.com/macros/s/AKfycbz7FfMnGmtgBlBcAgFWGW4MEDSIs7i8iSCuzHCwI0_m7kDjYxw0xnT7US9e9HiT_3-X/exec";
@@ -21,9 +21,9 @@ bot.on('polling_error', (err) => {
     console.error('error: [polling_error]', err);
     if (err && err.code === 'ETELEGRAM' && err.message && err.message.includes('409')) {
         console.warn('Telegram polling conflict detected (409). Stopping polling to avoid repeated errors.');
-        try {
-            bot.stopPolling();
-        } catch (e) {
+        try { 
+            bot.stopPolling(); 
+        } catch (e) { 
         }
         console.warn('Polling stopped.');
     }
@@ -32,41 +32,42 @@ bot.on('polling_error', (err) => {
 let webChatNotifications = [];
 
 const MAX_CHAT_HISTORY = 50;
-let chatHistory = [];
+let chatHistory = []; 
 
 function saveToHistory(role, message) {
     chatHistory.push({ role: role, text: message });
     if (chatHistory.length > MAX_CHAT_HISTORY) {
-        chatHistory.shift();
+        chatHistory.shift(); 
     }
 }
 
-let lastAlerts = {};
+let lastAlerts = {}; 
 const ALERT_COOLDOWN = 5 * 60 * 1000;
-const OVERRIDE_DURATION = 30 * 60 * 1000;
-let manualStopTimestamp = 0;
+const OVERRIDE_DURATION = 30 * 60 * 1000; 
+let manualStopTimestamp = 0; 
 
 function sendTelegramMsg(message, isAlert = true, errorKey = null) {
     const now = Date.now();
-
+    
     if (isAlert && errorKey) {
         if (lastAlerts[errorKey] && (now - lastAlerts[errorKey] < ALERT_COOLDOWN)) {
-            return;
+            return; 
         }
         lastAlerts[errorKey] = now;
     }
-
-    const icon = isAlert ? "🚨 **THÔNG BÁO** 🚨" : "📊 BÁO CÁO ĐỊNH KỲ 📊";
+    
+    const icon = isAlert ? "🚨 <b>THÔNG BÁO</b> 🚨" : "📊 <b>BÁO CÁO ĐỊNH KỲ</b> 📊";
     const time = new Date().toLocaleString('vi-VN');
-    const content = `${icon}\n\n🕒 Thời gian: ${time}\n${message}`;
+    
+    const content = `${icon}\n\n🕒 <b>Thời gian:</b> ${time}\n${message}`;
 
     MY_CHAT_IDS.forEach(chatId => {
-        bot.sendMessage(chatId, content, { parse_mode: 'Markdown' })
+        bot.sendMessage(chatId, content, { parse_mode: 'HTML' })
            .catch((err) => console.error(`❌ Lỗi gửi Telegram tới ${chatId}:`, err.message));
     });
 
-    let webMsg = content.replace(/\n/g, '<br>').replace(/\*\*/g, '');
-    webChatNotifications.push(webMsg);
+    let webMsg = content.replace(/\n/g, '<br>'); 
+    webChatNotifications.push(webMsg); 
 
     saveToHistory(isAlert ? 'alert' : 'report', webMsg);
 
@@ -74,14 +75,14 @@ function sendTelegramMsg(message, isAlert = true, errorKey = null) {
         syncToGoogleSheet({
             type: "alarm_sync",
             alarm_type: errorKey || "SYSTEM_ALERT",
-            message: message.replace(/\*\*/g, ''),
+            message: message.replace(/<[^>]*>?/gm, ''), 
             system_state: `Áp suất: ${currentSystemState.pressure}Bar, Tần số: ${currentSystemState.real_freq}Hz, Mode: ${currentSystemState.mode}`
         });
     }
 }
 
 const USAGE_FILE = path.join(__dirname, 'daily_usage.json');
-const CHART_FILE = path.join(__dirname, 'chart_history.json');
+const CHART_FILE = path.join(__dirname, 'chart_history.json'); 
 const REPORT_FILE = path.join(__dirname, 'report_yesterday.json');
 
 function getVNDateString() {
@@ -94,14 +95,14 @@ let dailyStats = {
     hourly: new Array(24).fill(0.0)
 };
 
-let historyData = [];
-const MAX_HISTORY = 3000;
+let historyData = []; 
+const MAX_HISTORY = 3000; 
 
 let currentSystemState = {
     pressure: 0.0,
     voltage: 0.0,
     flow: 0.0,
-    total_m3: 0.0,
+    total_m3: 0.0, 
     set_freq: 0.0,
     real_freq: 0.0,
     status: "OFF",
@@ -113,7 +114,7 @@ function saveAllDataToDisk() {
     try {
         const usageDataToSave = {
             ...dailyStats,
-            last_pressure: currentSystemState.pressure,
+            last_pressure: currentSystemState.pressure, 
             last_real_freq: currentSystemState.real_freq
         };
         fs.writeFileSync(USAGE_FILE, JSON.stringify(usageDataToSave, null, 2));
@@ -123,14 +124,14 @@ function saveAllDataToDisk() {
             data: historyData
         };
         fs.writeFileSync(CHART_FILE, JSON.stringify(chartDataToSave, null, 2));
-    } catch (e) {
-        console.error("❌ Lỗi lưu file ổ cứng:", e);
+    } catch (e) { 
+        console.error("❌ Lỗi lưu file ổ cứng:", e); 
     }
 }
 
 function loadAllDataFromDisk() {
     const today = getVNDateString();
-
+    
     try {
         if (fs.existsSync(USAGE_FILE)) {
             const data = JSON.parse(fs.readFileSync(USAGE_FILE, 'utf8'));
@@ -140,7 +141,7 @@ function loadAllDataFromDisk() {
                     totalM3: 0.0,
                     hourly: new Array(24).fill(0.0)
                 };
-                saveAllDataToDisk();
+                saveAllDataToDisk(); 
             } else {
                 dailyStats = data;
                 if (!dailyStats.hourly || dailyStats.hourly.length !== 24) {
@@ -148,14 +149,14 @@ function loadAllDataFromDisk() {
                 }
             }
         }
-    } catch (e) {
-        console.error("Lỗi đọc file usage:", e);
+    } catch (e) { 
+        console.error("Lỗi đọc file usage:", e); 
     }
 
     try {
         if (fs.existsSync(CHART_FILE)) {
             const chartFileContent = JSON.parse(fs.readFileSync(CHART_FILE, 'utf8'));
-
+            
             if (chartFileContent.date === today) {
                 historyData = chartFileContent.data || [];
             } else {
@@ -168,30 +169,30 @@ function loadAllDataFromDisk() {
     }
 }
 
-loadAllDataFromDisk();
+loadAllDataFromDisk(); 
 
 function processSystemQuery(text) {
-    const s = currentSystemState;
+    const s = currentSystemState; 
     text = text.toLowerCase();
-
-    const now = new Date().toLocaleString('vi-VN', {
+    
+    const now = new Date().toLocaleString('vi-VN', { 
         timeZone: 'Asia/Ho_Chi_Minh',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        day: '2-digit',
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit', 
+        day: '2-digit', 
         month: '2-digit',
         year:  '2-digit'
     });
 
-    if (['status', 'trạng thái', 'kiểm tra', 'thông sô', 'check', 'trạm','thông số'].some(word => text.includes(word))) {
+    if (['kiểm tra', 'thông sô', 'check', 'trạm','thông số'].some(word => text.includes(word))) {
         const statusIcon = s.system_status === "ON" ? "✅ TRỰC TUYẾN" : "❌ NGOẠI TUYẾN";
         const pumpIcon = s.status === "ON" ? "🟢 ĐANG CHẠY" : "🔴 ĐANG DỪNG";
         return `
 📊 **THÔNG SỐ HỆ THỐNG**
--------------------------------
+
 🕒 *Thời gian cập nhật: ${now}*
--------------------------------
+
 ${statusIcon} **Kết nối:** ${s.system_status} 
 🔴 **Trạng thái bơm:** ${s.status} 
 🌊 **Áp suất:** ${s.pressure} Bar 
@@ -201,81 +202,78 @@ ${statusIcon} **Kết nối:** ${s.system_status}
 🎯 **Tần số đặt:** ${s.set_freq} Hz 
 🔋 **Điện áp:** ${s.voltage} V
 🛠️ **Chế độ:** ${s.mode}
---------------------------------
-_Dữ liệu đầy đủ luôn nha sếp 😎_`;
-    }
 
+Dữ liệu đầy đủ luôn nha sếp 😎`;
+    } 
+    
     else if (['lịch trình', 'lich trinh', 'lịch hẹn', 'lich hen', 'giờ chạy', 'gio chay', 'schedule', '/schedule', 'hẹn giờ'].some(word => text.includes(word))) {
-
+        
         if (schedules.length === 0) {
             return `📅 **LỊCH TRÌNH:** Hiện tại chưa có lịch hẹn nào.\n_(Kiểm tra lúc: ${now})_`;
         }
-
-        let schedMsg = `📅 **DANH SÁCH LỊCH HẸN (${now})**\n-------------------------------\n`;
+        
+        let schedMsg = `📅 **DANH SÁCH LỊCH HẸN (${now})`;
         schedules.forEach((item, index) => {
             const start = new Date(item.startTime).toLocaleString('vi-VN', { hour: '2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' });
             const end = new Date(item.endTime).toLocaleString('vi-VN', { hour: '2-digit', minute:'2-digit' });
             const mode = item.finalMode === 'MODE_AUTO' ? "Tự động" : "Dừng hẳn";
             const repeatText = item.repeat === 1 ? "(Lặp hàng ngày)" : "";
             const limitText = item.limitM3 > 0 ? `💧 Mục tiêu: ${item.limitM3} m³` : "";
-
-
+            
             const lockStatus = (item.isLocked || isAllSchedulesLocked) ? "🔒 [TẠM KHÓA]" : "";
 
-            schedMsg += `${index + 1}. ⏰ **${start} - ${end}** ${repeatText} ${lockStatus}\n`;
-            schedMsg += `   ⚡ Tần số: ${item.freq} Hz \n ${limitText}\n`;
-            schedMsg += `   🔄 Sau kết thúc: ${mode}\n\n`;
+            schedMsg += `\n\n ${index + 1}. ⏰ **${start} - ${end}** ${repeatText} ${lockStatus}\n`;
+            schedMsg += `   ⚡ Tần số: ${item.freq} Hz \n ${limitText}`;
+            schedMsg += `   🔄 Sau kết thúc: ${mode}\n`;
         });
         return schedMsg;
     }
-
+    
     else if (['giờ', 'ngày', 'năm', 'thời gian', 'thứ mấy'].some(word => text.includes(word))) {
         return `📅 **Thời gian hiện tại:** ${now} \nChúc sếp một ngày làm việc hiệu quả và tràn đầy năng lượng! 😊`;
     }
 
     else if (['áp suất', 'pressure', 'pre', 'bar', 'nặng'].some(word => text.includes(word))) {
-        return `🌊 **Áp suất hệ thống (${now}):** ${s.pressure} Bar\n_Trạng thái: ${s.pressure > 0 ? 'Đang có áp' : 'Không có áp'}_`;
-    }
+        return `🌊 **Áp suất hệ thống (${now}):** ${s.pressure} Bar\nTrạng thái: ${s.pressure > 0 ? 'Đang có áp' : 'Không có áp'}`;
+    } 
 
     else if (['lưu lượng', 'flow', 'khối', 'm3', 'nước'].some(word => text.includes(word))) {
-        return `💧 **Lưu lượng hiện tại:** ${s.flow} m³/h\n📈 **Tổng nước đã dùng hôm nay:** ${s.total_m3} m³\n🕒 _Lúc: ${now}_`;
+        return `💧 **Lưu lượng hiện tại:** ${s.flow} m³/h\n📈 **Tổng nước đã dùng hôm nay:** ${s.total_m3} m³\n🕒 Lúc: ${now}`;
     }
 
     else if (['tần số', 'freq', 'hz', 'tốc độ', 'nhanh', 'chậm'].some(word => text.includes(word))) {
-        return `⚡ **Thông số tần số:**\n- Thực tế: ${s.real_freq} Hz\n- Cài đặt: ${s.set_freq} Hz\n🚀 _Tốc độ đang được kiểm soát ổn định._`;
-    }
+        return `⚡ **Thông số tần số:**\n Tần số thực tế: ${s.real_freq} Hz\n Tần số cài đặt: ${s.set_freq} Hz`; 
+    } 
 
     else if (['điện áp', 'volt', 'vôn', 'điện có khỏe không', 'nguồn'].some(word => text.includes(word))) {
-        return `🔋 **Thông số điện áp:** ${s.voltage} Volt\n_Đảm bảo an toàn cho thiết bị._`;
+        return `🔋 **Thông số điện áp:** ${s.voltage} Volt.`; 
     }
 
     else if (['trạng thái', 'status', 'bơm sao rồi', 'đang chạy hay dừng', 'bơm'].some(word => text.includes(word))) {
         const runIcon = s.status === "ON" ? "🟢 ĐANG CHẠY" : "🔴 ĐANG DỪNG";
         const modeText = (s.mode === 'MODE_AUTO' || s.mode === 'AUTO') ? "Tự động (Schedule)" : "Thủ công (Manual)";
-        return `${runIcon}\n🛠️ **Chế độ:** ${modeText}\n🕒 **Cập nhật lúc:** ${now}`;
+        return `TRẠNG THÁI BƠM \n ${runIcon}\n🛠️ **Chế độ:** ${modeText}\n🕒 **Cập nhật lúc:** ${now}`;
     }
     else if (
-        ['yêu', 'iu', 'thương', 'love', 'thich', 'thích'].some(word => text.includes(word)) &&
+        ['yêu', 'iu', 'thương', 'love', 'thich', 'thích'].some(word => text.includes(word)) && 
         ['anh', 'không', 'khong', 'khom', 'hong', 'hông', 'a '].some(word => text.includes(word))
     ) {
         return `🤖 Iu em Pía Khánh Giang nhìu lémmm. 😊💙`;
     }
 
     const reportKeywords = [
-        'dữ liệu', 'bao cao', 'báo cáo', 'hôm qua', 'hom qua',
+        'dữ liệu', 'bao cao', 'báo cáo', 'hôm qua', 'hom qua', 
         'gần nhất', 'gan nhat', 'cuối ngày', 'cuoi ngay', 'tổng lượng'
     ];
-
 
     if (reportKeywords.some(word => text.includes(word))) {
         let oldReport;
         try {
-
             if (fs.existsSync(REPORT_FILE)) {
                 oldReport = JSON.parse(fs.readFileSync(REPORT_FILE, 'utf8'));
             }
-        } catch (e) {
-            console.error("Lỗi đọc file báo cáo cũ:", e);
+        } catch (e) { 
+            console.error("Lỗi đọc file báo cáo cũ:", e); 
         }
 
         if (oldReport) {
@@ -284,41 +282,40 @@ _Dữ liệu đầy đủ luôn nha sếp 😎_`;
             const totalLast = parseFloat(oldReport.totalM3 || 0).toFixed(3);
 
             return `
-📊 **BÁO CÁO DỮ LIỆU HÔM QUA**
--------------------------------
+📊 **BÁO CÁO DỮ LIỆU GẦN NHẤT**
+
 📅 **Ngày ghi nhận:** ${oldReport.date}
 💧 **Tổng lưu lượng:** ${totalLast} m³
 🌊 **Áp suất cuối:** ${pLast} Bar
 ⚡ **Tần số cuối:** ${fLast} Hz
--------------------------------
-_Dữ liệu này là tổng kết của ngày hôm qua (${oldReport.date})._`;
-        } else {
 
+Dữ liệu này là tổng kết của ngày hôm qua (${oldReport.date}).`;
+        } else {
             return `Thưa sếp, hệ thống chưa có dữ liệu hôm qua vui lòng thử khởi động lại. Sếp xem tạm dữ liệu hôm nay bằng lệnh **'kiểm tra'** nhé!`;
         }
     }
-    else if (text.includes('sinh viên') || text.includes('thông tin sinh viên') || text.includes('người tạo')|| text.includes('người thực hiện')|| text.includes('sinh viên thực hiện')) {
+    
+    else if (text.includes('sinh viên') || text.includes('thông tin tác giả') || text.includes('người tạo')|| text.includes('người thực hiện')|| text.includes('sinh viên thực hiện')) {
         return `
-🎓 **THÔNG TIN SINH VIÊN**
--------------------------------
+🎓 **THÔNG TIN TÁC GIẢ**
+
 👤 **Họ và tên:** Cao Thanh Hiệp
 🆔 **MSSV:** 42101388
 🏫 **Lớp:** 21040302
 📚 **Đề tài:** Triển khai số hóa trạm bơm nước sinh hoạt và điều khiển tự động
 {IMAGE:/hiep-profile.jpg}
--------------------------------
-_Rất vui được hỗ trợ sếp!_ 😊`;
+Rất vui được hỗ trợ sếp! 😊`;
     }
-    return null;
+    return null; 
 }
 
 bot.on('message', (msg) => {
     if (!msg.text) return;
-
+    
     const chatId = msg.chat.id;
-    const text = msg.text.toLowerCase();
+    const text = msg.text.toLowerCase(); 
 
-    const firstName = msg.from.first_name || "";
+    const firstName = msg.from.first_name || ""; 
     const lastName = msg.from.last_name || "";
     const username = msg.from.username ? `@${msg.from.username}` : "Không có";
     const fullName = `${firstName} ${lastName}`.trim() || "Người dùng ẩn danh";
@@ -328,14 +325,30 @@ bot.on('message', (msg) => {
     console.log(`👤 Người gửi: ${fullName}`);
     console.log(`🆔 Username: ${username}`);
     console.log(`🔑 Chat ID: ${chatId}`);
-    console.log(`💬 Nội dung: "${text}"`);
+    console.log(`💬 Nội dung: "${msg.text}"`); 
     console.log(`------------------------------------------`);
 
+    if (text.startsWith('rep') || text.startsWith('rep ')) {
+        const content = msg.text.substring(4).trim(); 
+
+        if (content) {
+            const webMsg = `<b>👨‍💻 Admin:</b> ${content}`;
+            webChatNotifications.push(webMsg);
+
+            saveToHistory('bot', webMsg);
+
+            bot.sendMessage(chatId, `✅ Đã gửi phản hồi lên Web: "${content}"`);
+        } else {
+            bot.sendMessage(chatId, "⚠️ Sếp chưa nhập nội dung!", { parse_mode: 'Markdown' });
+        }
+        return; 
+    }
+  
     const systemReply = processSystemQuery(text);
 
     if (systemReply) {
         bot.sendMessage(chatId, systemReply, { parse_mode: 'Markdown' });
-    }
+    } 
     else if (text === '/id') {
         bot.sendMessage(chatId, `🆔 Chat ID của bạn là: \`${chatId}\``, { parse_mode: 'Markdown' });
     }
@@ -343,42 +356,42 @@ bot.on('message', (msg) => {
         bot.sendMessage(chatId, "🤖 Server Node.js vẫn đang hoạt động!");
     }
     else {
-        bot.sendMessage(chatId, "Chào sếp! Sếp muốn kiểm tra thông tin nào:😁\n- **'Thông tin sinh viên'** \n- **'kiểm tra'**: Xem tất cả thông số\n- **'áp suất'**: Xem áp suất riêng\n- **'lưu lượng'**: Xem lưu lượng riêng\n- **'tần số'**: Xem tần số riêng\n- **'điện áp'**: Xem điện áp riêng\n- **'lịch trình'**: xem lịch đã được đặt\n- **'ngày tháng năm'**: xem ngày tháng năm hôm nay\n- **'Dữ liệu cuối'**: xem dữ liệu ngày hôm qua", { parse_mode: 'Markdown' });
+        bot.sendMessage(chatId, "Chào sếp! Sếp muốn kiểm tra thông tin nào:😁\n- **'Thông tin tác giả'** \n- **'kiểm tra'**: Xem tất cả thông số\n- **'áp suất'**: Áp suất hiện tại \n- **'lưu lượng'**: Lưu lượng hiện tại \n- **'tần số'**: tần số hiện tại \n- **'điện áp'**: Điện áp hiện tại \n- **'lịch trình'**: Lịch đã được đặt\n- **'ngày tháng năm'**: thời khóa biểu\n- **'Dữ liệu cuối'**: Dữ liệu ngày hôm qua", { parse_mode: 'Markdown' });
     }
 });
 
-const mqttHost = 'mqtt://phuongnamdts.com';
+const mqttHost = 'mqtt://phuongnamdts.com'; 
 const mqttOptions = {
     port: 4783,
     username: 'baonammqtt',
     password: 'mqtt@d1git',
 };
 
-const TOPIC_DATA = 'esp32/pump/data';
-const TOPIC_CONTROL = 'esp32/pump/control';
+const TOPIC_DATA = 'esp32/pump/data';       
+const TOPIC_CONTROL = 'esp32/pump/control'; 
 
 let lastMqttMessageTime = Date.now();
-const MAX_SILENCE_MS = 30000;
-let isOfflineNotified = false;
-let previousStatus = "OFF";
+const MAX_SILENCE_MS = 30000; 
+let isOfflineNotified = false; 
+let previousStatus = "OFF";    
 
 let lastSavedFreq = -1;
 let lastSavedPressure = -1;
 let lastSavedTime = 0;
-const TIME_HEARTBEAT = 60000;
+const TIME_HEARTBEAT = 60000; 
 
-let activeSessionLimit = 0;
-let startSessionTotalM3 = 0;
+let activeSessionLimit = 0;   
+let startSessionTotalM3 = 0;  
 
-let schedules = [];
-let isAllSchedulesLocked = false;
-const DATA_FILE = path.join(__dirname, 'schedules.json');
+let schedules = []; 
+let isAllSchedulesLocked = false; 
+const DATA_FILE = path.join(__dirname, 'schedules.json'); 
 
 function saveToDisk() {
-    try {
-        fs.writeFileSync(DATA_FILE, JSON.stringify(schedules, null, 2));
-    } catch (err) {
-        console.error("❌ Lỗi lưu file:", err);
+    try { 
+        fs.writeFileSync(DATA_FILE, JSON.stringify(schedules, null, 2)); 
+    } catch (err) { 
+        console.error("❌ Lỗi lưu file:", err); 
     }
 }
 
@@ -387,12 +400,12 @@ function loadFromDisk() {
         if (fs.existsSync(DATA_FILE)) {
             schedules = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
         }
-    } catch (err) {
-        schedules = [];
+    } catch (err) { 
+        schedules = []; 
     }
 }
 
-loadFromDisk();
+loadFromDisk(); 
 
 const client = mqtt.connect(mqttHost, mqttOptions);
 
@@ -407,22 +420,22 @@ client.on('connect', () => {
     client.subscribe(TOPIC_DATA);
 });
 
-client.on('message', (topic, message) => {
-    if (topic === TOPIC_DATA) {
+client.on('message', (topic, message) => { 
+    if (topic === TOPIC_DATA) { 
         try {
             const now = Date.now();
-            const timeDiffSeconds = (now - lastMqttMessageTime) / 1000;
-            lastMqttMessageTime = now;
-
-            const data = JSON.parse(message.toString());
+            const timeDiffSeconds = (now - lastMqttMessageTime) / 1000; 
+            lastMqttMessageTime = now; 
+            
+            const data = JSON.parse(message.toString()); 
 
             const today = getVNDateString();
             if (dailyStats.date !== today) {
                 try {
                     const finalReportData = {
-                        date: dailyStats.date,
-                        totalM3: dailyStats.totalM3,
-                        last_pressure: currentSystemState.pressure,
+                        date: dailyStats.date,           
+                        totalM3: dailyStats.totalM3,     
+                        last_pressure: currentSystemState.pressure, 
                         last_real_freq: currentSystemState.real_freq
                     };
                     fs.writeFileSync(REPORT_FILE, JSON.stringify(finalReportData, null, 2));
@@ -433,7 +446,7 @@ client.on('message', (topic, message) => {
 
                 const yesterdayDate = dailyStats.date;
                 const yesterdayTotal = dailyStats.totalM3.toFixed(3);
-
+                
                 const summaryMsg = `
 🌟 **CẬP NHẬT NGÀY MỚI** 🌟
 -------------------------------
@@ -447,29 +460,29 @@ Chúc sếp một ngày làm việc vui vẻ! 😊
 _Hệ thống đã reset dữ liệu cho ngày mới._`;
 
                 sendTelegramMsg(summaryMsg, false);
-
+                
                 dailyStats = {
                     date: today,
                     totalM3: 0.0,
                     hourly: new Array(24).fill(0.0)
                 };
-
+                
                 historyData = [];
                 lastSavedFreq = -1;
                 lastSavedPressure = -1;
-
+                
                 saveAllDataToDisk();
             }
 
             if (timeDiffSeconds > 0 && timeDiffSeconds < 10) {
-                const currentFlow = parseFloat(data.flow || 0);
+                const currentFlow = parseFloat(data.flow || 0); 
                 const addedVolume = currentFlow * (timeDiffSeconds / 3600);
-
+                
                 dailyStats.totalM3 += addedVolume;
-
+                
                 const vnTimeStr = new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"});
                 const currentHourVN = new Date(vnTimeStr).getHours();
-
+                
                 if (dailyStats.hourly[currentHourVN] !== undefined) {
                     dailyStats.hourly[currentHourVN] += addedVolume;
                 }
@@ -480,8 +493,8 @@ _Hệ thống đã reset dữ liệu cho ngày mới._`;
             currentSystemState.set_freq = parseFloat(data.set_freq || 0);
             currentSystemState.voltage = parseFloat(data.voltage || 0);
             currentSystemState.flow = parseFloat(data.flow || 0);
-            currentSystemState.total_m3 = dailyStats.totalM3.toFixed(3);
-
+            currentSystemState.total_m3 = dailyStats.totalM3.toFixed(3); 
+            
             if (data.running_status !== undefined) currentSystemState.status = data.running_status ? "ON" : "OFF";
             if (data.control_mode) currentSystemState.mode = data.control_mode;
 
@@ -494,16 +507,16 @@ _Hệ thống đã reset dữ liệu cho ngày mới._`;
 
             if (activeSessionLimit > 0 && currentSystemState.status === "ON") {
                 const pumpedInSession = parseFloat(currentSystemState.total_m3) - startSessionTotalM3;
-
+                
                 if (pumpedInSession >= activeSessionLimit) {
                     client.publish(TOPIC_CONTROL, JSON.stringify({ command: "CMD_STOP" }));
-
+                    
                     sendTelegramMsg(`✅ **ĐỦ NƯỚC - TỰ ĐỘNG NGẮT**\nLượng nước đã bơm trong phiên: ${pumpedInSession.toFixed(2)} m³\n(Mục tiêu: ${activeSessionLimit} m³)`);
-
-                    activeSessionLimit = 0;
+                    
+                    activeSessionLimit = 0; 
                 }
             }
-
+ 
             if (previousStatus === "ON" && currentSystemState.status === "OFF") {
                 sendTelegramMsg(`⚠️ **BƠM ĐÃ DỪNG HOẠT ĐỘNG!**\nTrạng thái chuyển từ CHẠY sang DỪNG.\nÁp suất cuối: ${currentSystemState.pressure} Bar`, true, "ERR_PUMP_STOP");
             }
@@ -520,7 +533,7 @@ _Hệ thống đã reset dữ liệu cho ngày mới._`;
             if (currentSystemState.real_freq > 40) {
                 sendTelegramMsg(`⚠️ **TẦN SỐ CAO BẤT THƯỜNG!**\nHệ thống đang chạy: ${currentSystemState.real_freq}Hz (Mức khuyến nghị: 40Hz).`, true, "ERR_FREQ_HIGH");
             }
-
+          
             const freqDiff = Math.abs(currentSystemState.real_freq - lastSavedFreq) >= 0.2;
             const pressDiff = Math.abs(currentSystemState.pressure - lastSavedPressure) >= 0.1;
 
@@ -528,7 +541,7 @@ _Hệ thống đã reset dữ liệu cho ngày mới._`;
 
             if (freqDiff || pressDiff || timeDiff) {
                 const nowVN = new Date();
-                const timeLabel = nowVN.toLocaleTimeString('vi-VN', {
+                const timeLabel = nowVN.toLocaleTimeString('vi-VN', { 
                     hour12: false,
                     timeZone: 'Asia/Ho_Chi_Minh'
                 });
@@ -538,14 +551,14 @@ _Hệ thống đã reset dữ liệu cho ngày mới._`;
                     pressure: currentSystemState.pressure,
                     real_freq: currentSystemState.real_freq,
                     set_freq: currentSystemState.set_freq,
-                    flow: currentSystemState.flow
+                    flow: currentSystemState.flow 
                 });
 
                 lastSavedFreq = currentSystemState.real_freq;
                 lastSavedPressure = currentSystemState.pressure;
                 lastSavedTime = now;
 
-                if (historyData.length > MAX_HISTORY) historyData.shift();
+                if (historyData.length > MAX_HISTORY) historyData.shift(); 
             }
 
             saveAllDataToDisk();
@@ -561,13 +574,13 @@ setInterval(() => {
 
     if (timeSinceLastMessage > MAX_SILENCE_MS) {
         currentSystemState.system_status = "OFFLINE";
-
+        
         currentSystemState.pressure = 0.0;
         currentSystemState.voltage = 0.0;
         currentSystemState.flow = 0.0;
         currentSystemState.real_freq = 0.0;
-        currentSystemState.status = "OFF";
-
+        currentSystemState.status = "OFF"; 
+      
         if (!isOfflineNotified) {
             sendTelegramMsg("❌ **MẤT KẾT NỐI!**\nServer không nhận được dữ liệu từ Hệ Thống.\n(Kiểm tra nguồn điện hoặc Internet)", true);
             isOfflineNotified = true;
@@ -577,7 +590,7 @@ setInterval(() => {
     }
 }, 5000);
 
-let lastReportMinute = -1;
+let lastReportMinute = -1; 
 
 setInterval(() => {
     const nowVNStr = new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"});
@@ -586,11 +599,11 @@ setInterval(() => {
     const minute = nowVN.getMinutes();
 
     if ((hour === 6 || hour === 12 || hour === 18 ) && minute === 0) {
-        if (lastReportMinute !== minute) {
-
+        if (lastReportMinute !== minute) { 
+            
             const statusIcon = currentSystemState.system_status === "ON" ? "✅" : "❌";
             const runIcon = currentSystemState.status === "ON" ? "🟢" : "🔴";
-
+            
             const reportMsg = `
             --------------------------------
             ${statusIcon} **Kết nối:** ${currentSystemState.system_status}
@@ -603,103 +616,126 @@ setInterval(() => {
             --------------------------------
             Hệ thống hoạt động bình thường.
             `;
-
-            sendTelegramMsg(reportMsg, false);
+            
+            sendTelegramMsg(reportMsg, false); 
             lastReportMinute = minute;
         }
     } else {
-        lastReportMinute = -1;
+        lastReportMinute = -1; 
     }
-}, 10000);
+}, 10000); 
 
 setInterval(() => {
     const now = new Date();
-    const currentHour = now.getHours();
-    const currentMin = now.getMinutes();
-
-    const currentTotalMins = currentHour * 60 + currentMin;
-
+    const currentTotalMins = now.getHours() * 60 + now.getMinutes();
+    
     const y = now.getFullYear();
     const m = String(now.getMonth() + 1).padStart(2, '0');
     const d = String(now.getDate()).padStart(2, '0');
-    const todayStr = `${y}-${m}-${d}`;
+    const todayStr = `${y}-${m}-${d}`; 
 
     schedules.forEach(sched => {
         if (isAllSchedulesLocked === true || sched.isLocked === true) return;
 
-        const [sDate, sTime] = sched.startTime.split('T');
-        const [sH, sM] = sTime.split(':').map(Number);
-
-        const [eDate, eTime] = sched.endTime.split('T');
-        const [eH, eM] = eTime.split(':').map(Number);
+        const startParts = sched.startTime.split('T');
+        const sDate = startParts[0]; 
+        const [sH, sM] = startParts[1].split(':').map(Number);
+        const [eH, eM] = sched.endTime.split('T')[1].split(':').map(Number);
 
         const startTotalMins = sH * 60 + sM;
         const endTotalMins = eH * 60 + eM;
-
+        
         const isDateValid = (sched.repeat == 1) || (sDate === todayStr);
 
-        const isInTimeRange = (currentTotalMins >= startTotalMins) && (currentTotalMins < endTotalMins);
-
-        if (isDateValid && isInTimeRange) {
-
+        if (isDateValid && (currentTotalMins >= startTotalMins) && (currentTotalMins < endTotalMins)) {
             const isManualOverrideActive = (Date.now() - manualStopTimestamp) < OVERRIDE_DURATION;
+            
+            if (!isManualOverrideActive) {
+                const isPumpOff = (currentSystemState.status === "OFF");
+                const isFreqWrong = Math.abs(currentSystemState.real_freq - parseFloat(sched.freq)) > 1.0;
 
-            if (isManualOverrideActive) {
-                return;
-            }
+                if (isPumpOff || isFreqWrong) {
+                    client.publish(TOPIC_CONTROL, JSON.stringify({ command: "SET_FREQ", value: parseFloat(sched.freq) }));
+                    setTimeout(() => { client.publish(TOPIC_CONTROL, JSON.stringify({ command: "CMD_RUN" })); }, 200);
 
-            const isPumpOff = (currentSystemState.status === "OFF");
-            const isFreqWrong = Math.abs(currentSystemState.real_freq - parseFloat(sched.freq)) > 1.0;
+                    const startKey = `start_${sched.id}_${todayStr}`;
 
-            if (isPumpOff || isFreqWrong) {
-                console.log(`[MASTER-RECOVERY] Kích hoạt lại lịch ${sH}:${sM} @ ${sched.freq}Hz`);
+                    if (currentTotalMins === startTotalMins && !notifiedSchedules.has(startKey)) {
+                        activeSessionLimit = parseFloat(sched.limitM3 || 0);
+                        startSessionTotalM3 = parseFloat(currentSystemState.total_m3 || 0);
 
-                client.publish(TOPIC_CONTROL, JSON.stringify({
-                    command: "SET_FREQ",
-                    value: parseFloat(sched.freq)
-                }));
+                        const startMsg = `
+<b>🚀 HỆ THỐNG BẮT ĐẦU CHẠY</b>
 
-                setTimeout(() => {
-                     client.publish(TOPIC_CONTROL, JSON.stringify({ command: "CMD_RUN" }));
-                }, 200);
+⏰ <b>Giờ bắt đầu:</b> ${sH}:${sM < 10 ? '0' + sM : sM}
+⚡ <b>Tần số thiết lập:</b> ${sched.freq} Hz
+💧 <b>Mục tiêu lưu lượng:</b> ${sched.limitM3 > 0 ? sched.limitM3 + " m³" : "Không giới hạn"}
 
-                if (activeSessionLimit === 0 && sched.limitM3 > 0) {
-                    activeSessionLimit = parseFloat(sched.limitM3);
-                    startSessionTotalM3 = parseFloat(currentSystemState.total_m3);
-                    sendTelegramMsg(`🔄 **BÁM ĐUỔI LỊCH**\nPhát hiện lịch trình đang diễn ra (${sH}:${sM}).\nĐã kích hoạt bơm lại!`);
+<i>Hệ thống đã kích hoạt theo đúng lịch trình.</i>`;
+                        
+                        sendTelegramMsg(startMsg, false);
+                        
+                        notifiedSchedules.add(startKey); 
+
+                    } else if (activeSessionLimit === 0 && currentTotalMins > startTotalMins) {
+                        activeSessionLimit = parseFloat(sched.limitM3 || 0);
+                        startSessionTotalM3 = parseFloat(currentSystemState.total_m3 || 0);
+                    }
                 }
             }
         }
-
+        
         if (isDateValid && currentTotalMins === endTotalMins) {
+            const finishKey = `finish_${sched.id}_${todayStr}`;
+            
+            if (!notifiedSchedules.has(finishKey)) {
+                const sDisplay = sched.startTime.split('T')[1].substring(0, 5);
+                const eDisplay = sched.endTime.split('T')[1].substring(0, 5);
 
-             const desiredMode = sched.finalMode;
+                const currentM3 = parseFloat(currentSystemState.total_m3 || 0);
+                const pumped = currentM3 - startSessionTotalM3;
+                
+                let targetStatus = (sched.limitM3 > 0) ? (pumped >= sched.limitM3 ? "(ĐÃ ĐỦ)" : "(CHƯA ĐẠT)") : "";
 
-             if (desiredMode === 'MODE_AUTO') {
+                let scheduleAdvice = "";
+                if (sched.repeat == 1) {
+                    scheduleAdvice = (targetStatus === "(ĐÃ ĐỦ)") 
+                        ? "♻️ Lịch sẽ lặp lại vào ngày hôm sau" 
+                        : "⚠️ Lịch sẽ lặp lại vào ngày hôm sau, sếp nên tính toán lại lưu lượng";
+                } else {
+                    scheduleAdvice = "📌 Lịch chạy một lần (đã hoàn tất)";
+                }
 
-                 if (currentSystemState.mode !== 'AUTO' && currentSystemState.mode !== 'MODE_AUTO') {
-                     console.log(`[MASTER] Kết thúc lịch ${eH}:${eM}. Chuyển sang AUTO.`);
+                const finishMsg = `
+<b>🏁 ĐÃ KẾT THÚC LỊCH ĐƯỢC ĐẶT</b>
 
-                     client.publish(TOPIC_CONTROL, JSON.stringify({ command: "MODE_AUTO" }));
+⏰ <b>Thời gian:</b> từ ${sDisplay} đến ${eDisplay}
+💧 <b>Lưu lượng mong muốn:</b> ${sched.limitM3 > 0 ? sched.limitM3 + " m³" : "Không đặt"}
+📈 <b>Lưu lượng đã đạt được:</b> ${pumped.toFixed(3)} m³ ${targetStatus}
 
-                     sendTelegramMsg(`🔄 **KẾT THÚC LỊCH**\nHệ thống chuyển sang chế độ TỰ ĐỘNG (AUTO).`);
-                 }
-             }
-             else {
-                 if (currentSystemState.status === "ON") {
-                     console.log(`[MASTER] Kết thúc lịch ${eH}:${eM}. Gửi lệnh DỪNG.`);
-                     client.publish(TOPIC_CONTROL, JSON.stringify({ command: "CMD_STOP" }));
-                     sendTelegramMsg(`🛑 **KẾT THÚC LỊCH**\nĐã đến giờ dừng theo lịch trình.`);
-                 }
-             }
+${scheduleAdvice}
+<i>${sched.finalMode === 'MODE_AUTO' ? "Hệ thống chuyển sang chế độ TỰ ĐỘNG" : "Hệ thống đã dừng theo lịch trình"}</i>`;
+
+                sendTelegramMsg(finishMsg, false);
+                
+                notifiedSchedules.add(finishKey); 
+                
+                activeSessionLimit = 0; 
+
+                if (sched.finalMode === 'MODE_AUTO') {
+                    client.publish(TOPIC_CONTROL, JSON.stringify({ command: "MODE_AUTO" }));
+                } else {
+                    client.publish(TOPIC_CONTROL, JSON.stringify({ command: "CMD_STOP" }));
+                }
+            }
         }
     });
 }, 5000);
 
-async function syncToGoogleSheet(payload) {
-    if (!GAS_APP_URL) return;
+async function syncToGoogleSheet(payload) { 
+    if (!GAS_APP_URL) return; 
     try {
-        const response = await fetch(GAS_APP_URL, {
+            const response = await fetch(GAS_APP_URL, { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -712,25 +748,25 @@ async function syncToGoogleSheet(payload) {
 }
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'monitor.html'));
+    res.sendFile(path.join(__dirname, 'public', 'monitor.html')); 
 });
 
 app.post('/api/control', (req, res) => {
-    const { command, value } = req.body;
-
+    const { command, value } = req.body; 
+    
     if (command === 'CMD_STOP') {
-        manualStopTimestamp = Date.now();
+        manualStopTimestamp = Date.now(); 
         console.log(`🛑 [USER] Dừng khẩn cấp. Tạm dừng lịch tự động trong ${OVERRIDE_DURATION/60000} phút.`);
-
+        
         sendTelegramMsg(`🚨 **DỪNG KHẨN CẤP!**\nNgười dùng đã tắt bơm.\nHệ thống sẽ không tự bật lại trong ${OVERRIDE_DURATION/60000} phút.`, true);
-    }
+    } 
     else if (command === 'CMD_RUN') {
-        manualStopTimestamp = 0;
+        manualStopTimestamp = 0; 
         console.log("▶️ [USER] Đã nhấn Chạy. Hủy bỏ chế độ ưu tiên dừng.");
     }
 
-    const payload = JSON.stringify({ command, value });
-    client.publish(TOPIC_CONTROL, payload, (err) => {
+    const payload = JSON.stringify({ command, value });  
+    client.publish(TOPIC_CONTROL, payload, (err) => { 
         if (err) {
             res.status(500).json({ status: "error" });
         } else {
@@ -742,28 +778,38 @@ app.post('/api/control', (req, res) => {
 
 app.post('/api/chat', (req, res) => {
     const userMsg = req.body.message || "";
-    if (userMsg !== "__CHECK_NOTIFICATIONS__") {
-        console.log(`💬 [WEB CHAT]: ${userMsg}`);
-    }
-
-    if (userMsg && userMsg !== "__CHECK_NOTIFICATIONS__") {
-        saveToHistory('user', userMsg);
-    }
-
+    
     if (userMsg === "__CHECK_NOTIFICATIONS__") {
         const notifications = [...webChatNotifications];
-        webChatNotifications = [];
+        webChatNotifications = []; 
         return res.json({ notifications: notifications });
     }
 
-    let reply = processSystemQuery(userMsg);
-    if (!reply) {
-        reply = "Chào sếp! 🫢\nSếp muốn biết thông tin nào?\n\n- **thông tin sinh viên**\n- **thông số trạm bơm**\n- **lưu lượng**\n- **tần số**\n- **áp suất**\n- **điện áp**\n- **trạng thái**\n- **lịch trình**\n- **ngày tháng năm** \n- **Dữ liệu hôm qua** \n\nTôi sẽ cho sếp biết ngay! 😁";
-    }
-    reply = reply.replace(/\{IMAGE:(.*?)\}/, '<img src="$1" style="width:100%; border-radius:10px; margin-bottom:10px;">');
-    reply = reply.replace(/\n/g, '<br>').replace(/\*\*/g, '');
+    if (userMsg) {
+        console.log(`💬 [WEB CHAT]: ${userMsg}`);
+        saveToHistory('user', userMsg); 
 
-    saveToHistory('bot', reply);
+        const ADMIN_ID = '8207059326'; 
+        const teleContent = `<b>User Web:</b> ${userMsg}`;
+
+        bot.sendMessage(ADMIN_ID, teleContent, { parse_mode: 'HTML' })
+           .catch(e => console.error("Lỗi gửi Telegram:", e.message));
+    }
+
+    let reply = processSystemQuery(userMsg);
+    
+    if (!reply) {
+        reply = "Chào sếp! 🫢\nSếp muốn biết thông tin nào?\n\n- **thông tin tác giả**\n- **kiểm tra**: Xem tất cả thông số\n- **áp suất**: Áp suất hiện tại\n- **lưu lượng**: lưu lượng hiện tại\n- **tần số**: Xem tần số riêng\n- **điện áp**: Điện áp hiện tại\n- **trạng thái**: Xem trạng thái bơm\n- **lịch trình**: Lịch đã đặt\n- **ngày tháng năm**: xem thời gian\n- **Dữ liệu hôm qua**\n\nTôi sẽ cho sếp biết ngay! 😁";
+    }
+
+    if (reply) {
+     
+        reply = reply.replace(/\{IMAGE:(.*?)\}/, '<img src="$1" style="width:100%; border-radius:10px; margin-bottom:10px;">');
+        
+        reply = reply.replace(/\n/g, '<br>').replace(/\*\*/g, '');
+        
+        saveToHistory('bot', reply);
+    }
 
     res.json({ reply: reply });
 });
@@ -790,24 +836,24 @@ app.get('/api/daily-usage', (req, res) => {
 
 app.post('/api/schedules', (req, res) => {
     const { startTime, endTime, freq, action, finalMode, repeat, limitM3 } = req.body;
-
-    if (schedules.length >= 10) schedules.shift();
-
-    const newSchedule = {
-        id: Date.now(),
-        startTime,
-        endTime,
-        freq,
-        action: action || "RUN",
+    
+    if (schedules.length >= 10) schedules.shift(); 
+    
+    const newSchedule = { 
+        id: Date.now(), 
+        startTime, 
+        endTime, 
+        freq, 
+        action: action || "RUN", 
         finalMode: finalMode || "MODE_AUTO",
         repeat: parseInt(repeat) || 0,
         limitM3: parseFloat(limitM3) || 0,
-        isLocked: false
+        isLocked: false 
     };
-
+    
     schedules.push(newSchedule);
-    saveToDisk();
-
+    saveToDisk(); 
+    
     console.log(`📅 Đã lên lịch mới trên Server: ${startTime} -> ${endTime}`);
 
     syncToGoogleSheet({
@@ -821,12 +867,12 @@ app.post('/api/schedules', (req, res) => {
 
 app.delete('/api/schedules/:id', (req, res) => {
     const id = parseInt(req.params.id);
-
+    
     const exists = schedules.find(s => s.id === id);
 
     schedules = schedules.filter(s => s.id !== id);
-    saveToDisk();
-
+    saveToDisk(); 
+    
     console.log(`🗑️ Đã xóa lịch ID: ${id} trên Server.`);
 
     if (exists) {
@@ -851,7 +897,7 @@ app.post('/api/schedules/:id/lock', (req, res) => {
     const sched = schedules.find(s => s.id === id);
     if (sched) {
         sched.isLocked = req.body.locked;
-        saveToDisk();
+        saveToDisk(); 
         console.log(`[LOCK] Đã ${sched.isLocked ? "KHÓA" : "MỞ"} lịch ID: ${id}`);
         res.json({ status: "success" });
     } else {
@@ -878,37 +924,40 @@ rl.on('line', (line) => {
     if (line.trim() === "") return;
 
     if (typeof webChatNotifications !== 'undefined') {
-        webChatNotifications.push(`[ADMIN_MSG]${line}`);
-
+        webChatNotifications.push(`[ADMIN_MSG]${line}`); 
+        
         saveToHistory('user', `<b>🙉 Admin:</b> ${line}`);
 
-        console.log(`✅ Đã gửi phản hồi: ${line}`);
+        console.log(` Đã gửi phản hồi: ${line}`);
     }
 });
 
-let notifiedSchedules = new Set();
-let lastResetHour = new Date().getHours();
+let notifiedSchedules = new Set(); 
+let lastResetDay = new Date().getDate(); 
 
 setInterval(() => {
     const now = new Date();
-    const currentHour = now.getHours();
+    const currentDay = now.getDate(); 
     const currentTimeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
     const todayStr = now.getFullYear() + "-" + (now.getMonth() + 1).toString().padStart(2, '0') + "-" + now.getDate().toString().padStart(2, '0');
 
-    if (currentHour !== lastResetHour) {
+    if (currentDay !== lastResetDay) {
         notifiedSchedules.clear();
-        lastResetHour = currentHour;
-        console.log(`[HỆ THỐNG] Đã reset bộ nhớ thông báo cho giờ mới: ${currentHour}h`);
+        lastResetDay = currentDay;
+        console.log(`[HỆ THỐNG] Đã reset bộ nhớ thông báo cho NGÀY MỚI: ${todayStr}`);
     }
 
     for (let key of notifiedSchedules) {
-        const idFromKey = key.split('_')[0];
+        const parts = key.split('_');
+        
+        let idFromKey = (['start', 'finish', 'pre'].includes(parts[0])) ? parts[1] : parts[0];
+
         if (!schedules.find(s => s.id == idFromKey)) {
             notifiedSchedules.delete(key);
             console.log(`[HỆ THỐNG] Đã dọn dẹp bộ nhớ cho lịch ID: ${idFromKey} (vừa bị xóa)`);
         }
     }
-
+    
     schedules.forEach(s => {
         if (s.isLocked || isAllSchedulesLocked) return;
 
@@ -916,22 +965,18 @@ setInterval(() => {
         const isToday = (s.repeat == 1) || (sDate === todayStr);
         if (!isToday) return;
 
-        const key = `${s.id}_${currentTimeStr}`;
-
-        if (sTime === currentTimeStr && !notifiedSchedules.has(key)) {
-            const msg = `🚀 **HỆ THỐNG BẮT ĐẦU CHẠY**\n⏰ Lịch trình: ${sTime}\n⚡ Tần số: ${s.freq} Hz\n💧 Lưu lượng dự tính: ${s.limitM3 || 0} m³`;
-            sendTelegramMsg(msg, false);
-            notifiedSchedules.add(key);
-        }
+        const preKey = `pre_${s.id}_${todayStr}`;
 
         const [sh, sm] = sTime.split(':').map(Number);
         const startTotalMin = sh * 60 + sm;
         const currentTotalMin = now.getHours() * 60 + now.getMinutes();
 
-        if (startTotalMin - currentTotalMin === 5 && !notifiedSchedules.has(key + "_pre")) {
+        if (startTotalMin - currentTotalMin === 5 && !notifiedSchedules.has(preKey)) {
             const msg = `🔔 **NHẮC NHỞ LỊCH TRÌNH**\nLịch trình lúc **${sTime}** sẽ bắt đầu sau 5 phút nữa sếp nhé!\n⚡ Tần số đặt: ${s.freq} Hz\n💧 lưu lượng dự kiến: ${s.limitM3 || 0} m³`;
-            sendTelegramMsg(msg, false);
-            notifiedSchedules.add(key + "_pre");
+            
+            sendTelegramMsg(msg, false); 
+            
+            notifiedSchedules.add(preKey);
         }
     });
 
