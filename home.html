@@ -1149,39 +1149,15 @@
             .then(response => response.json())
             .then(result => {
                 if (result.status === "success") {
-            
-                    alert(`✅ Lên lịch thành công!${repeatMsg}\n\n▶️ Bắt đầu: ${displayStart}\n⏹️ Kết thúc: ${displayEnd}${limitMsg}`);
-                    
-                    document.getElementById('schedForm').style.display = 'none';
-                    loadSchedules();
-                } else {
-                    alert("❌ Lỗi server: " + result.message);
-                }
-            })
-            .catch(err => {
-                alert("❌ Lỗi kết nối!");
-                console.error(err);
-            });
-        }
-
-        function executeAddSchedule(data, displayStart, displayEnd, repeatMsg, limitMsg) {
-            fetch('/api/schedules', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.status === "success") {
                     alert(`✅ Lên lịch thành công!${repeatMsg}\n\n▶️ Bắt đầu: ${displayStart}\n⏹️ Kết thúc: ${displayEnd}${limitMsg}`);
                     document.getElementById('schedForm').style.display = 'none';
                     loadSchedules();
                 } else {
-                    alert("❌ Lỗi server: " + result.message);
+                    alert("Lỗi server: " + result.message);
                 }
             })
             .catch(err => {
-                alert("❌ Lỗi kết nối!");
+                alert(" Lỗi kết nối!");
                 console.error(err);
             });
         }
