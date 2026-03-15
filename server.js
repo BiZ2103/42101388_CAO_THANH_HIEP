@@ -56,14 +56,14 @@ function sendTelegramMsg(message, isAlert = true, errorKey = null) {
         lastAlerts[errorKey] = now;
     }
     
-    const icon = isAlert ? "🚨 <b>THÔNG BÁO</b> 🚨" : "📊 <b>BÁO CÁO ĐỊNH KỲ</b> 📊";
+    const icon = isAlert ? "<b>THÔNG BÁO</b>" : "<b>BÁO CÁO ĐỊNH KỲ</b>";
     const time = new Date().toLocaleString('vi-VN');
     
-    const content = `${icon}\n\n🕒 <b>Thời gian:</b> ${time}\n${message}`;
+    const content = `${icon}\n\n<b>Thời gian:</b> ${time}\n${message}`;
 
     MY_CHAT_IDS.forEach(chatId => {
         bot.sendMessage(chatId, content, { parse_mode: 'HTML' })
-           .catch((err) => console.error(`❌ Lỗi gửi Telegram tới ${chatId}:`, err.message));
+           .catch((err) => console.error(`Lỗi gửi Telegram tới ${chatId}:`, err.message));
     });
 
     let webMsg = content.replace(/\n/g, '<br>'); 
@@ -125,7 +125,7 @@ function saveAllDataToDisk() {
         };
         fs.writeFileSync(CHART_FILE, JSON.stringify(chartDataToSave, null, 2));
     } catch (e) { 
-        console.error("❌ Lỗi lưu file ổ cứng:", e); 
+        console.error("Lỗi lưu file ổ cứng:", e); 
     }
 }
 
@@ -186,79 +186,79 @@ function processSystemQuery(text) {
     });
 
     if (['kiểm tra', 'thông sô', 'check', 'trạm','thông số'].some(word => text.includes(word))) {
-        const statusIcon = s.system_status === "ON" ? "✅ TRỰC TUYẾN" : "❌ NGOẠI TUYẾN";
-        const pumpIcon = s.status === "ON" ? "🟢 ĐANG CHẠY" : "🔴 ĐANG DỪNG";
+        const statusIcon = s.system_status === "ON" ? "TRỰC TUYẾN" : "NGOẠI TUYẾN";
+        const pumpIcon = s.status === "ON" ? "ĐANG CHẠY" : "ĐANG DỪNG";
         return `
-📊 **THÔNG SỐ HỆ THỐNG**
+**THÔNG SỐ HỆ THỐNG**
 
-🕒 *Thời gian cập nhật: ${now}*
+*Thời gian cập nhật: ${now}*
 
-${statusIcon} **Kết nối:** ${s.system_status} 
-🔴 **Trạng thái bơm:** ${s.status} 
-🌊 **Áp suất:** ${s.pressure} Bar 
-💧 **Lưu lượng:** ${s.flow} m³/h
-📈 **Tổng hôm nay:** ${s.total_m3} m³
-⚡ **Tần số thực:** ${s.real_freq} Hz
-🎯 **Tần số đặt:** ${s.set_freq} Hz 
-🔋 **Điện áp:** ${s.voltage} V
-🛠️ **Chế độ:** ${s.mode}
+**Kết nối:** ${s.system_status} (${statusIcon})
+**Trạng thái bơm:** ${s.status} (${pumpIcon})
+**Áp suất:** ${s.pressure} Bar 
+**Lưu lượng:** ${s.flow} m³/h
+**Tổng hôm nay:** ${s.total_m3} m³
+**Tần số thực:** ${s.real_freq} Hz
+**Tần số đặt:** ${s.set_freq} Hz 
+**Điện áp:** ${s.voltage} V
+**Chế độ:** ${s.mode}
 
-Dữ liệu đầy đủ luôn nha sếp 😎`;
+Dữ liệu đầy đủ luôn nha sếp`;
     } 
     
     else if (['lịch trình', 'lich trinh', 'lịch hẹn', 'lich hen', 'giờ chạy', 'gio chay', 'schedule', '/schedule', 'hẹn giờ'].some(word => text.includes(word))) {
         
         if (schedules.length === 0) {
-            return `📅 **LỊCH TRÌNH:** Hiện tại chưa có lịch hẹn nào.\n_(Kiểm tra lúc: ${now})_`;
+            return `**LỊCH TRÌNH:** Hiện tại chưa có lịch hẹn nào.\n_(Kiểm tra lúc: ${now})_`;
         }
         
-        let schedMsg = `📅 **DANH SÁCH LỊCH HẸN (${now})`;
+        let schedMsg = `**DANH SÁCH LỊCH HẸN (${now})`;
         schedules.forEach((item, index) => {
             const start = new Date(item.startTime).toLocaleString('vi-VN', { hour: '2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' });
             const end = new Date(item.endTime).toLocaleString('vi-VN', { hour: '2-digit', minute:'2-digit' });
             const mode = item.finalMode === 'MODE_AUTO' ? "Tự động" : "Dừng hẳn";
             const repeatText = item.repeat === 1 ? "(Lặp hàng ngày)" : "";
-            const limitText = item.limitM3 > 0 ? `💧 Mục tiêu: ${item.limitM3} m³` : "";
+            const limitText = item.limitM3 > 0 ? `Mục tiêu: ${item.limitM3} m³` : "";
             
-            const lockStatus = (item.isLocked || isAllSchedulesLocked) ? "🔒 [TẠM KHÓA]" : "";
+            const lockStatus = (item.isLocked || isAllSchedulesLocked) ? "[TẠM KHÓA]" : "";
 
-            schedMsg += `\n\n ${index + 1}. ⏰ **${start} - ${end}** ${repeatText} ${lockStatus}\n`;
-            schedMsg += `   ⚡ Tần số: ${item.freq} Hz \n ${limitText}`;
-            schedMsg += `   🔄 Sau kết thúc: ${mode}\n`;
+            schedMsg += `\n\n ${index + 1}. **${start} - ${end}** ${repeatText} ${lockStatus}\n`;
+            schedMsg += `   Tần số: ${item.freq} Hz \n ${limitText}`;
+            schedMsg += `   Sau kết thúc: ${mode}\n`;
         });
         return schedMsg;
     }
     
     else if (['giờ', 'ngày', 'năm', 'thời gian', 'thứ mấy'].some(word => text.includes(word))) {
-        return `📅 **Thời gian hiện tại:** ${now} \nChúc sếp một ngày làm việc hiệu quả và tràn đầy năng lượng! 😊`;
+        return `**Thời gian hiện tại:** ${now} \nChúc sếp một ngày làm việc hiệu quả và tràn đầy năng lượng!`;
     }
 
     else if (['áp suất', 'pressure', 'pre', 'bar', 'nặng'].some(word => text.includes(word))) {
-        return `🌊 **Áp suất hệ thống (${now}):** ${s.pressure} Bar\nTrạng thái: ${s.pressure > 0 ? 'Đang có áp' : 'Không có áp'}`;
+        return `**Áp suất hệ thống (${now}):** ${s.pressure} Bar\nTrạng thái: ${s.pressure > 0 ? 'Đang có áp' : 'Không có áp'}`;
     } 
 
     else if (['lưu lượng', 'flow', 'khối', 'm3', 'nước'].some(word => text.includes(word))) {
-        return `💧 **Lưu lượng hiện tại:** ${s.flow} m³/h\n📈 **Tổng nước đã dùng hôm nay:** ${s.total_m3} m³\n🕒 Lúc: ${now}`;
+        return `**Lưu lượng hiện tại:** ${s.flow} m³/h\n**Tổng nước đã dùng hôm nay:** ${s.total_m3} m³\nLúc: ${now}`;
     }
 
     else if (['tần số', 'freq', 'hz', 'tốc độ', 'nhanh', 'chậm'].some(word => text.includes(word))) {
-        return `⚡ **Thông số tần số:**\n Tần số thực tế: ${s.real_freq} Hz\n Tần số cài đặt: ${s.set_freq} Hz`; 
+        return `**Thông số tần số:**\n Tần số thực tế: ${s.real_freq} Hz\n Tần số cài đặt: ${s.set_freq} Hz`; 
     } 
 
     else if (['điện áp', 'volt', 'vôn', 'điện có khỏe không', 'nguồn'].some(word => text.includes(word))) {
-        return `🔋 **Thông số điện áp:** ${s.voltage} Volt.`; 
+        return `**Thông số điện áp:** ${s.voltage} Volt.`; 
     }
 
     else if (['trạng thái', 'status', 'bơm sao rồi', 'đang chạy hay dừng', 'bơm'].some(word => text.includes(word))) {
-        const runIcon = s.status === "ON" ? "🟢 ĐANG CHẠY" : "🔴 ĐANG DỪNG";
+        const runIcon = s.status === "ON" ? "ĐANG CHẠY" : "ĐANG DỪNG";
         const modeText = (s.mode === 'MODE_AUTO' || s.mode === 'AUTO') ? "Tự động (Schedule)" : "Thủ công (Manual)";
-        return `TRẠNG THÁI BƠM \n ${runIcon}\n🛠️ **Chế độ:** ${modeText}\n🕒 **Cập nhật lúc:** ${now}`;
+        return `TRẠNG THÁI BƠM \n ${runIcon}\n**Chế độ:** ${modeText}\n**Cập nhật lúc:** ${now}`;
     }
     else if (
         ['yêu', 'iu', 'thương', 'love', 'thich', 'thích'].some(word => text.includes(word)) && 
         ['anh', 'không', 'khong', 'khom', 'hong', 'hông', 'a '].some(word => text.includes(word))
     ) {
-        return `🤖 Iu em Pía Khánh Giang nhìu lémmm. 😊💙`;
+        return `Iu em Pía Khánh Giang nhìu lémmm.`;
     }
 
     const reportKeywords = [
@@ -282,12 +282,12 @@ Dữ liệu đầy đủ luôn nha sếp 😎`;
             const totalLast = parseFloat(oldReport.totalM3 || 0).toFixed(3);
 
             return `
-📊 **BÁO CÁO DỮ LIỆU GẦN NHẤT**
+**BÁO CÁO DỮ LIỆU GẦN NHẤT**
 
-📅 **Ngày ghi nhận:** ${oldReport.date}
-💧 **Tổng lưu lượng:** ${totalLast} m³
-🌊 **Áp suất cuối:** ${pLast} Bar
-⚡ **Tần số cuối:** ${fLast} Hz
+**Ngày ghi nhận:** ${oldReport.date}
+**Tổng lưu lượng:** ${totalLast} m³
+**Áp suất cuối:** ${pLast} Bar
+**Tần số cuối:** ${fLast} Hz
 
 Dữ liệu này là tổng kết của ngày hôm qua (${oldReport.date}).`;
         } else {
@@ -297,14 +297,14 @@ Dữ liệu này là tổng kết của ngày hôm qua (${oldReport.date}).`;
     
     else if (text.includes('sinh viên') || text.includes('thông tin tác giả') || text.includes('người tạo')|| text.includes('người thực hiện')|| text.includes('sinh viên thực hiện')) {
         return `
-🎓 **THÔNG TIN TÁC GIẢ**
+**THÔNG TIN TÁC GIẢ**
 
-👤 **Họ và tên:** Cao Thanh Hiệp
-🆔 **MSSV:** 42101388
-🏫 **Lớp:** 21040302
-📚 **Đề tài:** Triển khai số hóa trạm bơm nước sinh hoạt và điều khiển tự động
+**Họ và tên:** Cao Thanh Hiệp
+**MSSV:** 42101388
+**Lớp:** 21040302
+**Đề tài:** Triển khai số hóa trạm bơm nước sinh hoạt và điều khiển tự động
 {IMAGE:/hiep-profile.jpg}
-Rất vui được hỗ trợ sếp! 😊`;
+Rất vui được hỗ trợ sếp!`;
     }
     return null; 
 }
@@ -321,25 +321,25 @@ bot.on('message', (msg) => {
     const fullName = `${firstName} ${lastName}`.trim() || "Người dùng ẩn danh";
 
     console.log(`------------------------------------------`);
-    console.log(`📩 TIN NHẮN MỚI TỪ TELEGRAM`);
-    console.log(`👤 Người gửi: ${fullName}`);
-    console.log(`🆔 Username: ${username}`);
-    console.log(`🔑 Chat ID: ${chatId}`);
-    console.log(`💬 Nội dung: "${msg.text}"`); 
+    console.log(`TIN NHẮN MỚI TỪ TELEGRAM`);
+    console.log(`Người gửi: ${fullName}`);
+    console.log(`Username: ${username}`);
+    console.log(`Chat ID: ${chatId}`);
+    console.log(`Nội dung: "${msg.text}"`); 
     console.log(`------------------------------------------`);
 
     if (text.startsWith('rep') || text.startsWith('rep ')) {
         const content = msg.text.substring(4).trim(); 
 
         if (content) {
-            const webMsg = `<b>👨‍💻 Admin:</b> ${content}`;
+            const webMsg = `<b>Admin:</b> ${content}`;
             webChatNotifications.push(webMsg);
 
             saveToHistory('bot', webMsg);
 
-            bot.sendMessage(chatId, `✅ Đã gửi phản hồi lên Web: "${content}"`);
+            bot.sendMessage(chatId, `Đã gửi phản hồi lên Web: "${content}"`);
         } else {
-            bot.sendMessage(chatId, "⚠️ Sếp chưa nhập nội dung!", { parse_mode: 'Markdown' });
+            bot.sendMessage(chatId, "Sếp chưa nhập nội dung!", { parse_mode: 'Markdown' });
         }
         return; 
     }
@@ -350,13 +350,13 @@ bot.on('message', (msg) => {
         bot.sendMessage(chatId, systemReply, { parse_mode: 'Markdown' });
     } 
     else if (text === '/id') {
-        bot.sendMessage(chatId, `🆔 Chat ID của bạn là: \`${chatId}\``, { parse_mode: 'Markdown' });
+        bot.sendMessage(chatId, `Chat ID của bạn là: \`${chatId}\``, { parse_mode: 'Markdown' });
     }
     else if (text === '/ping') {
-        bot.sendMessage(chatId, "🤖 Server Node.js vẫn đang hoạt động!");
+        bot.sendMessage(chatId, "Server Node.js vẫn đang hoạt động!");
     }
     else {
-        bot.sendMessage(chatId, "Chào sếp! Sếp muốn kiểm tra thông tin nào:😁\n- **'Thông tin tác giả'** \n- **'kiểm tra'**: Xem tất cả thông số\n- **'áp suất'**: Áp suất hiện tại \n- **'lưu lượng'**: Lưu lượng hiện tại \n- **'tần số'**: tần số hiện tại \n- **'điện áp'**: Điện áp hiện tại \n- **'lịch trình'**: Lịch đã được đặt\n- **'ngày tháng năm'**: thời khóa biểu\n- **'Dữ liệu cuối'**: Dữ liệu ngày hôm qua", { parse_mode: 'Markdown' });
+        bot.sendMessage(chatId, "Chào sếp! Sếp muốn kiểm tra thông tin nào:\n- **'Thông tin tác giả'** \n- **'kiểm tra'**: Xem tất cả thông số\n- **'áp suất'**: Áp suất hiện tại \n- **'lưu lượng'**: Lưu lượng hiện tại \n- **'tần số'**: tần số hiện tại \n- **'điện áp'**: Điện áp hiện tại \n- **'lịch trình'**: Lịch đã được đặt\n- **'ngày tháng năm'**: thời khóa biểu\n- **'Dữ liệu cuối'**: Dữ liệu ngày hôm qua", { parse_mode: 'Markdown' });
     }
 });
 
@@ -391,7 +391,7 @@ function saveToDisk() {
     try { 
         fs.writeFileSync(DATA_FILE, JSON.stringify(schedules, null, 2)); 
     } catch (err) { 
-        console.error("❌ Lỗi lưu file:", err); 
+        console.error("Lỗi lưu file:", err); 
     }
 }
 
@@ -439,23 +439,23 @@ client.on('message', (topic, message) => {
                         last_real_freq: currentSystemState.real_freq
                     };
                     fs.writeFileSync(REPORT_FILE, JSON.stringify(finalReportData, null, 2));
-                    console.log(`💾 Đã lưu báo cáo ngày ${dailyStats.date} vào file report_yesterday.json`);
+                    console.log(`Đã lưu báo cáo ngày ${dailyStats.date} vào file report_yesterday.json`);
                 } catch (err) {
-                    console.error("❌ Lỗi lưu báo cáo ngày cũ:", err);
+                    console.error("Lỗi lưu báo cáo ngày cũ:", err);
                 }
 
                 const yesterdayDate = dailyStats.date;
                 const yesterdayTotal = dailyStats.totalM3.toFixed(3);
                 
                 const summaryMsg = `
-🌟 **CẬP NHẬT NGÀY MỚI** 🌟
+**CẬP NHẬT NGÀY MỚI**
 -------------------------------
 Đã qua ngày **${today}**. 
-Chúc sếp một ngày làm việc vui vẻ! 😊
+Chúc sếp một ngày làm việc vui vẻ!
 
-📊 **TỔNG KẾT HÔM QUA (${yesterdayDate})**
+**TỔNG KẾT HÔM QUA (${yesterdayDate})**
 -------------------------------
-💧 Tổng lưu lượng sử dụng là: **${yesterdayTotal} m³**
+Tổng lưu lượng sử dụng là: **${yesterdayTotal} m³**
 -------------------------------
 _Hệ thống đã reset dữ liệu cho ngày mới._`;
 
@@ -501,7 +501,7 @@ _Hệ thống đã reset dữ liệu cho ngày mới._`;
             currentSystemState.system_status = "ON";
 
             if (isOfflineNotified) {
-                sendTelegramMsg("✅ **ĐÃ CÓ TÍN HIỆU!** Hệ thống đã kết nối trở lại.", true, "CONNECT_RECOVERY");
+                sendTelegramMsg("**ĐÃ CÓ TÍN HIỆU!** Hệ thống đã kết nối trở lại.", true, "CONNECT_RECOVERY");
                 isOfflineNotified = false;
             }
 
@@ -511,27 +511,27 @@ _Hệ thống đã reset dữ liệu cho ngày mới._`;
                 if (pumpedInSession >= activeSessionLimit) {
                     client.publish(TOPIC_CONTROL, JSON.stringify({ command: "CMD_STOP" }));
                     
-                    sendTelegramMsg(`✅ **ĐỦ NƯỚC - TỰ ĐỘNG NGẮT**\nLượng nước đã bơm trong phiên: ${pumpedInSession.toFixed(2)} m³\n(Mục tiêu: ${activeSessionLimit} m³)`);
+                    sendTelegramMsg(`**ĐỦ NƯỚC - TỰ ĐỘNG NGẮT**\nLượng nước đã bơm trong phiên: ${pumpedInSession.toFixed(2)} m³\n(Mục tiêu: ${activeSessionLimit} m³)`);
                     
                     activeSessionLimit = 0; 
                 }
             }
  
             if (previousStatus === "ON" && currentSystemState.status === "OFF") {
-                sendTelegramMsg(`⚠️ **BƠM ĐÃ DỪNG HOẠT ĐỘNG!**\nTrạng thái chuyển từ CHẠY sang DỪNG.\nÁp suất cuối: ${currentSystemState.pressure} Bar`, true, "ERR_PUMP_STOP");
+                sendTelegramMsg(`**BƠM ĐÃ DỪNG HOẠT ĐỘNG!**\nTrạng thái chuyển từ CHẠY sang DỪNG.\nÁp suất cuối: ${currentSystemState.pressure} Bar`, true, "ERR_PUMP_STOP");
             }
             previousStatus = currentSystemState.status;
 
             if (currentSystemState.status === "ON" && currentSystemState.pressure <= 0) {
-                sendTelegramMsg(`⚠️ **MẤT ÁP SUẤT!**\nBơm đang chạy nhưng Áp suất tụt xuống ${currentSystemState.pressure} Bar.`, true, "ERR_PRESSURE");
+                sendTelegramMsg(`**MẤT ÁP SUẤT!**\nBơm đang chạy nhưng Áp suất tụt xuống ${currentSystemState.pressure} Bar.`, true, "ERR_PRESSURE");
            }
 
             if (currentSystemState.status === "ON" && currentSystemState.real_freq <= 0) {
-                sendTelegramMsg("⚠️ **LỖI BIẾN TẦN!**\nTrạng thái là CHẠY (ON) nhưng Tần số thực tế về 0Hz.", true, "ERR_INVERTER");
+                sendTelegramMsg("**LỖI BIẾN TẦN!**\nTrạng thái là CHẠY (ON) nhưng Tần số thực tế về 0Hz.", true, "ERR_INVERTER");
             }
 
             if (currentSystemState.real_freq > 40) {
-                sendTelegramMsg(`⚠️ **TẦN SỐ CAO BẤT THƯỜNG!**\nHệ thống đang chạy: ${currentSystemState.real_freq}Hz (Mức khuyến nghị: 40Hz).`, true, "ERR_FREQ_HIGH");
+                sendTelegramMsg(`**TẦN SỐ CAO BẤT THƯỜNG!**\nHệ thống đang chạy: ${currentSystemState.real_freq}Hz (Mức khuyến nghị: 40Hz).`, true, "ERR_FREQ_HIGH");
             }
           
             const freqDiff = Math.abs(currentSystemState.real_freq - lastSavedFreq) >= 0.2;
@@ -564,7 +564,7 @@ _Hệ thống đã reset dữ liệu cho ngày mới._`;
             saveAllDataToDisk();
 
         } catch (e) {
-            console.error("⚠️ Lỗi phân tích JSON:", e.message);
+            console.error("Lỗi phân tích JSON:", e.message);
         }
     }
 });
@@ -582,7 +582,7 @@ setInterval(() => {
         currentSystemState.status = "OFF"; 
       
         if (!isOfflineNotified) {
-            sendTelegramMsg("❌ **MẤT KẾT NỐI!**\nServer không nhận được dữ liệu từ Hệ Thống.\n(Kiểm tra nguồn điện hoặc Internet)", true);
+            sendTelegramMsg("**MẤT KẾT NỐI!**\nServer không nhận được dữ liệu từ Hệ Thống.\n(Kiểm tra nguồn điện hoặc Internet)", true);
             isOfflineNotified = true;
         }
     } else {
@@ -601,18 +601,18 @@ setInterval(() => {
     if ((hour === 6 || hour === 12 || hour === 18 ) && minute === 0) {
         if (lastReportMinute !== minute) { 
             
-            const statusIcon = currentSystemState.system_status === "ON" ? "✅" : "❌";
-            const runIcon = currentSystemState.status === "ON" ? "🟢" : "🔴";
+            const statusIcon = currentSystemState.system_status === "ON" ? "[OK]" : "[FAIL]";
+            const runIcon = currentSystemState.status === "ON" ? "[RUN]" : "[STOP]";
             
             const reportMsg = `
             --------------------------------
             ${statusIcon} **Kết nối:** ${currentSystemState.system_status}
             ${runIcon} **Trạng thái:** ${currentSystemState.status}
-            🌊 **Áp suất:** ${currentSystemState.pressure} Bar
-            💧 **Lưu lượng:** ${currentSystemState.flow} m³/h
-            📈 **Tổng dùng:** ${currentSystemState.total_m3} m³
-            ⚡ **Tần số:** ${currentSystemState.real_freq} Hz
-            🔋 **Điện áp:** ${currentSystemState.voltage} V
+            **Áp suất:** ${currentSystemState.pressure} Bar
+            **Lưu lượng:** ${currentSystemState.flow} m³/h
+            **Tổng dùng:** ${currentSystemState.total_m3} m³
+            **Tần số:** ${currentSystemState.real_freq} Hz
+            **Điện áp:** ${currentSystemState.voltage} V
             --------------------------------
             Hệ thống hoạt động bình thường.
             `;
@@ -622,11 +622,11 @@ setInterval(() => {
         }
     } else {
         lastReportMinute = -1; 
-    }
-}, 10000); 
+    } 
+}, 10000);
 
 setInterval(() => {
-    const now = new Date();
+    const now = new Date(); 
     const currentTotalMins = now.getHours() * 60 + now.getMinutes();
     
     const y = now.getFullYear();
@@ -665,11 +665,11 @@ setInterval(() => {
                         startSessionTotalM3 = parseFloat(currentSystemState.total_m3 || 0);
 
                         const startMsg = `
-<b>🚀 HỆ THỐNG BẮT ĐẦU CHẠY</b>
+<b>HỆ THỐNG BẮT ĐẦU CHẠY</b>
 
-⏰ <b>Giờ bắt đầu:</b> ${sH}:${sM < 10 ? '0' + sM : sM}
-⚡ <b>Tần số thiết lập:</b> ${sched.freq} Hz
-💧 <b>Mục tiêu lưu lượng:</b> ${sched.limitM3 > 0 ? sched.limitM3 + " m³" : "Không giới hạn"}
+<b>Giờ bắt đầu:</b> ${sH}:${sM < 10 ? '0' + sM : sM}
+<b>Tần số thiết lập:</b> ${sched.freq} Hz
+<b>Mục tiêu lưu lượng:</b> ${sched.limitM3 > 0 ? sched.limitM3 + " m³" : "Không giới hạn"}
 
 <i>Hệ thống đã kích hoạt theo đúng lịch trình.</i>`;
                         
@@ -700,18 +700,17 @@ setInterval(() => {
                 let scheduleAdvice = "";
                 if (sched.repeat == 1) {
                     scheduleAdvice = (targetStatus === "(ĐÃ ĐỦ)") 
-                        ? "♻️ Lịch sẽ lặp lại vào ngày hôm sau" 
-                        : "⚠️ Lịch sẽ lặp lại vào ngày hôm sau, sếp nên tính toán lại lưu lượng";
+                        ? "Lịch sẽ lặp lại vào ngày hôm sau" 
+                        : "Lịch sẽ lặp lại vào ngày hôm sau, sếp nên tính toán lại lưu lượng";
                 } else {
-                    scheduleAdvice = "📌 Lịch chạy một lần (đã hoàn tất)";
+                    scheduleAdvice = "Lịch chạy một lần (đã hoàn tất)";
                 }
 
                 const finishMsg = `
-<b>🏁 ĐÃ KẾT THÚC LỊCH ĐƯỢC ĐẶT</b>
-
-⏰ <b>Thời gian:</b> từ ${sDisplay} đến ${eDisplay}
-💧 <b>Lưu lượng mong muốn:</b> ${sched.limitM3 > 0 ? sched.limitM3 + " m³" : "Không đặt"}
-📈 <b>Lưu lượng đã đạt được:</b> ${pumped.toFixed(3)} m³ ${targetStatus}
+<b>ĐÃ KẾT THÚC LỊCH ĐƯỢC ĐẶT</b>
+<b>Thời gian:</b> từ ${sDisplay} đến ${eDisplay}
+<b>Lưu lượng mong muốn:</b> ${sched.limitM3 > 0 ? sched.limitM3 + " m³" : "Không đặt"}
+<b>Lưu lượng đã đạt được:</b> ${pumped.toFixed(3)} m³ ${targetStatus}
 
 ${scheduleAdvice}
 <i>${sched.finalMode === 'MODE_AUTO' ? "Hệ thống chuyển sang chế độ TỰ ĐỘNG" : "Hệ thống đã dừng theo lịch trình"}</i>`;
@@ -741,9 +740,9 @@ async function syncToGoogleSheet(payload) {
             body: JSON.stringify(payload)
         });
         const txt = await response.text();
-        console.log(`📤 [SYNC-SHEET] Kết quả: ${txt}`);
+        console.log(`[SYNC-SHEET] Kết quả: ${txt}`);
     } catch (e) {
-        console.error("❌ Lỗi đồng bộ Google Sheet:", e.message);
+        console.error("Lỗi đồng bộ Google Sheet:", e.message);
     }
 }
 
@@ -756,13 +755,13 @@ app.post('/api/control', (req, res) => {
     
     if (command === 'CMD_STOP') {
         manualStopTimestamp = Date.now(); 
-        console.log(`🛑 [USER] Dừng khẩn cấp. Tạm dừng lịch tự động trong ${OVERRIDE_DURATION/60000} phút.`);
+        console.log(`[USER] Dừng khẩn cấp. Tạm dừng lịch tự động trong ${OVERRIDE_DURATION/60000} phút.`);
         
-        sendTelegramMsg(`🚨 **DỪNG KHẨN CẤP!**\nNgười dùng đã tắt bơm.\nHệ thống sẽ không tự bật lại trong ${OVERRIDE_DURATION/60000} phút.`, true);
+        sendTelegramMsg(`**DỪNG KHẨN CẤP!**\nNgười dùng đã tắt bơm.\nHệ thống sẽ không tự bật lại trong ${OVERRIDE_DURATION/60000} phút.`, true);
     } 
     else if (command === 'CMD_RUN') {
         manualStopTimestamp = 0; 
-        console.log("▶️ [USER] Đã nhấn Chạy. Hủy bỏ chế độ ưu tiên dừng.");
+        console.log("[USER] Đã nhấn Chạy. Hủy bỏ chế độ ưu tiên dừng.");
     }
 
     const payload = JSON.stringify({ command, value });  
@@ -770,7 +769,7 @@ app.post('/api/control', (req, res) => {
         if (err) {
             res.status(500).json({ status: "error" });
         } else {
-            console.log(`📤 Lệnh: ${payload}`);
+            console.log(`Lệnh: ${payload}`);
             res.json({ status: "success" });
         }
     });
@@ -786,7 +785,7 @@ app.post('/api/chat', (req, res) => {
     }
 
     if (userMsg) {
-        console.log(`💬 [WEB CHAT]: ${userMsg}`);
+        console.log(`[WEB CHAT]: ${userMsg}`);
         saveToHistory('user', userMsg); 
 
         const ADMIN_ID = '8207059326'; 
@@ -799,7 +798,7 @@ app.post('/api/chat', (req, res) => {
     let reply = processSystemQuery(userMsg);
     
     if (!reply) {
-        reply = "Chào sếp! 🫢\nSếp muốn biết thông tin nào?\n\n- **thông tin tác giả**\n- **kiểm tra**: Xem tất cả thông số\n- **áp suất**: Áp suất hiện tại\n- **lưu lượng**: lưu lượng hiện tại\n- **tần số**: Xem tần số riêng\n- **điện áp**: Điện áp hiện tại\n- **trạng thái**: Xem trạng thái bơm\n- **lịch trình**: Lịch đã đặt\n- **ngày tháng năm**: xem thời gian\n- **Dữ liệu hôm qua**\n\nTôi sẽ cho sếp biết ngay! 😁";
+        reply = "Chào sếp!\nSếp muốn biết thông tin nào?\n\n- **thông tin tác giả**\n- **kiểm tra**: Xem tất cả thông số\n- **áp suất**: Áp suất hiện tại\n- **lưu lượng**: lưu lượng hiện tại\n- **tần số**: Xem tần số riêng\n- **điện áp**: Điện áp hiện tại\n- **trạng thái**: Xem trạng thái bơm\n- **lịch trình**: Lịch đã đặt\n- **ngày tháng năm**: xem thời gian\n- **Dữ liệu hôm qua**\n\nTôi sẽ cho sếp biết ngay!";
     }
 
     if (reply) {
@@ -854,7 +853,7 @@ app.post('/api/schedules', (req, res) => {
     schedules.push(newSchedule);
     saveToDisk(); 
     
-    console.log(`📅 Đã lên lịch mới trên Server: ${startTime} -> ${endTime}`);
+    console.log(`Đã lên lịch mới trên Server: ${startTime} -> ${endTime}`);
 
     syncToGoogleSheet({
         type: "schedule_sync",
@@ -873,7 +872,7 @@ app.delete('/api/schedules/:id', (req, res) => {
     schedules = schedules.filter(s => s.id !== id);
     saveToDisk(); 
     
-    console.log(`🗑️ Đã xóa lịch ID: ${id} trên Server.`);
+    console.log(`Đã xóa lịch ID: ${id} trên Server.`);
 
     if (exists) {
         syncToGoogleSheet({
@@ -910,7 +909,7 @@ app.get('/api/schedules-status', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`🚀 Web Server đang chạy tại: http://localhost:${port}`);
+    console.log(`Web Server đang chạy tại: http://localhost:${port}`);
 });
 
 const readline = require('readline');
@@ -926,9 +925,9 @@ rl.on('line', (line) => {
     if (typeof webChatNotifications !== 'undefined') {
         webChatNotifications.push(`[ADMIN_MSG]${line}`); 
         
-        saveToHistory('user', `<b>🙉 Admin:</b> ${line}`);
+        saveToHistory('user', `<b>Admin:</b> ${line}`);
 
-        console.log(` Đã gửi phản hồi: ${line}`);
+        console.log(`Đã gửi phản hồi: ${line}`);
     }
 });
 
@@ -972,7 +971,7 @@ setInterval(() => {
         const currentTotalMin = now.getHours() * 60 + now.getMinutes();
 
         if (startTotalMin - currentTotalMin === 5 && !notifiedSchedules.has(preKey)) {
-            const msg = `🔔 **NHẮC NHỞ LỊCH TRÌNH**\nLịch trình lúc **${sTime}** sẽ bắt đầu sau 5 phút nữa sếp nhé!\n⚡ Tần số đặt: ${s.freq} Hz\n💧 lưu lượng dự kiến: ${s.limitM3 || 0} m³`;
+            const msg = `**NHẮC NHỞ LỊCH TRÌNH**\nLịch trình lúc **${sTime}** sẽ bắt đầu sau 5 phút nữa sếp nhé!\nTần số đặt: ${s.freq} Hz\nlưu lượng dự kiến: ${s.limitM3 || 0} m³`;
             
             sendTelegramMsg(msg, false); 
             
