@@ -44,41 +44,40 @@
 
 <div id="real-time-clock">00:00:00</div>
 <script>
-    // 1. KHAI BÁO BIẾN CỤC BỘ
-   // --- KHAI BÁO BIẾN TOÀN CỤC ---
+
     let lastPressure = "0.0 bar";
     let lastFrequency = "0.0 Hz";
     let lastFlow = "0.0 m³/h";     
     let lastTotal = "0.000 m³";    
     let pumpStatus = "OFF";
 
-    // HÀM CẬP NHẬT DỮ LIỆU TỪ SERVER
+
     function updateData() {
         fetch('/api/data')
             .then(res => res.json())
             .then(data => {
-                // áp suất
+ 
                 if (data.pressure !== undefined) {
                     lastPressure = parseFloat(data.pressure).toFixed(1) + "Bar";
                 }
                 
-                // tần số
+
                 if (data.real_freq !== undefined) {
                     lastFrequency = parseFloat(data.real_freq).toFixed(1) + "Hz";
                 }
 
-                // lưu lượng
+   
                 if (data.flow !== undefined) {
                     lastFlow = parseFloat(data.flow).toFixed(1) + "m³/h";
                 }
 
-                // tổng lưu lượng
+     
                 if (data.total_m3 !== undefined) {
                     // làm tròn
                     lastTotal = parseFloat(data.total_m3).toFixed(3) + "m³";
                 }
 
-                // trạng thái bơm
+  
                 if (data.running_status !== undefined) {
                     pumpStatus = (data.running_status === true || data.running_status === "ON") ? "ON" : "OFF";
                 } else if (data.status !== undefined) {
@@ -90,15 +89,15 @@
             .catch(e => console.log("Lỗi kết nối server:", e));
     }
 
-    // VẼ GIAO DIỆN (UI)
+
     function applyToUI() {
-        // Tìm tất cả các thẻ có thể chứa chữ 
+
         const all = document.querySelectorAll('div, span, text, tspan');
         
         all.forEach(el => {
             const text = el.innerText ? el.innerText.trim() : "";
 
-            // HIỂN THỊ ÁP SUẤT 
+
             if (text === "0000" || el.getAttribute('data-monitor') === 'true') {
                 el.innerText = lastPressure;
                 el.style.fontFamily = "Arial";
@@ -108,7 +107,7 @@
                 el.setAttribute('data-monitor', 'true'); 
             }
 
-            //  HIỂN THỊ TẦN SỐ
+
             if (text === "50" || el.getAttribute('data-frequency') === 'true') {
                 el.innerText = lastFrequency;
                 el.style.fontFamily = "Arial";
@@ -118,7 +117,7 @@
                 el.setAttribute('data-frequency', 'true');
             }
 
-            // -HIỂN THỊ LƯU LƯỢNG 
+    
             if (text === "0" || el.getAttribute('data-flow') === 'true') {
                 el.innerText = lastFlow;
                 el.style.fontFamily = "Arial";
@@ -128,7 +127,7 @@
                 el.setAttribute('data-flow', 'true');
             }
 
-            //  HIỂN THỊ TỔNG LƯU LƯỢNG
+       
             if (text === "00" || el.getAttribute('data-total') === 'true') {
                 el.innerText = lastTotal;
                 el.style.fontFamily = "Arial";
@@ -139,7 +138,7 @@
             }
         });
 
-        // HIỆU ỨNG BƠM
+
         const bluePumps = document.querySelectorAll('image[x="1512"]');
 
         bluePumps.forEach(img => {
@@ -155,7 +154,7 @@
         });
     }
 
-    //  ĐỒNG HỒ THỜI GIAN
+ 
     function updateClock() {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
@@ -169,10 +168,10 @@
         }
     }
 
-    // LOPP
-    setInterval(updateData, 2000);   // Lấy dữ liệu Server mỗi 2 giây
-    setInterval(applyToUI, 200);     // Quét và cập nhật giao diện mỗi 0.2 giây 
-    setInterval(updateClock, 1000);  // Cập nhật đồng hồ mỗi giây
+   
+    setInterval(updateData, 2000);   
+    setInterval(applyToUI, 200);     
+    setInterval(updateClock, 1000);  
     
     
     updateData();
