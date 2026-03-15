@@ -1,0 +1,159 @@
+{
+  "date": "4/2/2026",
+  "data": [
+    {
+      "time": "22:35:00",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:36:04",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:37:04",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:38:14",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:39:19",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:40:23",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:41:28",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:42:33",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:43:34",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:44:36",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:45:23",
+      "pressure": 0,
+      "real_freq": 0,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:45:23",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:46:27",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:47:33",
+      "pressure": 0,
+      "real_freq": 0,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:47:33",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:48:38",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:49:40",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:50:41",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:51:46",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:52:57",
+      "pressure": 0,
+      "real_freq": 0,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:52:57",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    },
+    {
+      "time": "22:54:02",
+      "pressure": 0,
+      "real_freq": -1,
+      "set_freq": 0,
+      "flow": 0
+    }
+  ]
+}

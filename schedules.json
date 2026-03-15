@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1770201622272,
+    "startTime": "2027-02-04T17:40",
+    "endTime": "2027-02-04T17:41",
+    "freq": 0,
+    "action": "RUN",
+    "finalMode": "MODE_AUTO",
+    "repeat": 0,
+    "limitM3": 0,
+    "isLocked": false
+  },
+  {
+    "id": 1770201634010,
+    "startTime": "2026-02-05T17:40",
+    "endTime": "2026-02-10T17:41",
+    "freq": 0,
+    "action": "RUN",
+    "finalMode": "MODE_AUTO",
+    "repeat": 0,
+    "limitM3": 0,
+    "isLocked": false
+  }
+]
